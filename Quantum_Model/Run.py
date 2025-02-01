@@ -164,38 +164,38 @@ class CustomBatchGenerator(tf.keras.utils.Sequence):
 train_generator = CustomBatchGenerator(X_train_q, X_train_c, y_train_split, batch_size=32)
 val_generator = CustomBatchGenerator(X_val_q, X_val_c, y_val_split, batch_size=32)
 
-# Train the Model
+# Train the Model for 100 Epochs
 history = hybrid_model.fit(
     train_generator,
     validation_data=val_generator,
-    epochs=25,
-    verbose=1,
-    callbacks=[
-        tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=3, restore_best_weights=True),
-        tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=2, verbose=1),
-        tf.keras.callbacks.ModelCheckpoint("best_qnn_model.keras", monitor="val_accuracy", save_best_only=True, verbose=1)
-    ]
+    epochs=100,  # Updated epoch count
+    verbose=1
 )
-
-# Plot Results
-plt.figure(figsize=(10, 6))
-plt.plot(history.history['accuracy'], label='Training Accuracy')
-plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
-plt.xlabel('Epochs')
-plt.ylabel('Accuracy')
-plt.title('Training and Validation Accuracy Over Epochs')
-plt.legend()
-plt.grid()
-plt.show()
 
 # Predict Malicious TLS Traffic
 y_pred_probs = hybrid_model.predict([X_test.iloc[:, :num_qubits], X_test.iloc[:, num_qubits:]])
 y_pred = np.argmax(y_pred_probs, axis=1)
 
-# Extract Malicious Traffic (Assuming Label '0' Represents Malicious Traffic)
+# Extract Malicious Traffic
 malicious_traffic = X_test.iloc[np.where(y_pred == 0)].copy()
 malicious_traffic['Predicted_Label'] = y_pred[np.where(y_pred == 0)]
 
 # Save Malicious TLS Traffic to CSV
 malicious_traffic.to_csv("Malicious_TLS_Traffic.csv", index=False)
 print(f"Saved {len(malicious_traffic)} malicious TLS traffic records to 'Malicious_TLS_Traffic.csv'.")
+
+# Plot Training and Validation Accuracy
+plt.figure(figsize=(10, 6))
+plt.plot(history.history['accuracy'], label='Training Accuracy', linestyle='solid')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy', linestyle='dashed')
+
+# Calculate Testing Accuracy
+test_accuracy = np.mean(y_pred == y_test)
+plt.axhline(y=test_accuracy, color='r', linestyle='dotted', label=f'Testing Accuracy: {test_accuracy:.4f}')
+
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.title('Training, Validation, and Testing Accuracy Over Epochs')
+plt.legend()
+plt.grid()
+plt.show()
