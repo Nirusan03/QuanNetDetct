@@ -119,12 +119,14 @@ def create_hybrid_model(num_qubits, num_features, num_classes=4):
     q_layer = tf.keras.layers.Dense(32, activation="relu")(q_layer)
 
     # Classical Path
-    c_layer = tf.keras.layers.Dense(128, activation="relu")(input_c)
+    # Reduce neurons & increase dropout
+    c_layer = tf.keras.layers.Dense(64, activation="relu")(input_c)
     c_layer = tf.keras.layers.BatchNormalization()(c_layer)
-    c_layer = tf.keras.layers.Dropout(0.2)(c_layer)
-    c_layer = tf.keras.layers.Dense(64, activation="relu")(c_layer)
+    c_layer = tf.keras.layers.Dropout(0.3)(c_layer)
+    c_layer = tf.keras.layers.Dense(32, activation="relu")(c_layer)
     c_layer = tf.keras.layers.BatchNormalization()(c_layer)
-    c_layer = tf.keras.layers.Dropout(0.2)(c_layer)
+    c_layer = tf.keras.layers.Dropout(0.3)(c_layer)
+
     
     # Fusion of Quantum & Classical Features
     combined = tf.keras.layers.concatenate([q_layer, c_layer])
@@ -164,12 +166,12 @@ class CustomBatchGenerator(tf.keras.utils.Sequence):
 train_generator = CustomBatchGenerator(X_train_q, X_train_c, y_train_split, batch_size=32)
 val_generator = CustomBatchGenerator(X_val_q, X_val_c, y_val_split, batch_size=32)
 
-# Train the Model for 100 Epochs
+# Train the Model
 history = hybrid_model.fit(
     train_generator,
     validation_data=val_generator,
-    epochs=100,  # Updated epoch count
-    verbose=1
+    epochs=100, 
+    verbose=1,
 )
 
 # Predict Malicious TLS Traffic
