@@ -346,3 +346,9 @@ labels_dict = {0: "Malicious", 1: "Non-Malicious", 2: "Uncertain"}
 print("\n===== Random TLS Traffic Prediction =====")
 print(f"Predicted Label: {labels_dict[pred_label]}")
 print(f"True Label: {'Malicious' if true_label == 0 else 'Non-Malicious'}")
+
+# Load the saved model
+loaded_hybrid_model = load_model("hybrid_qnn_model.h5", custom_objects={"QuantumLayer": QuantumLayer})
+
+# Verify the loaded model summary
+loaded_hybrid_model.summary()
