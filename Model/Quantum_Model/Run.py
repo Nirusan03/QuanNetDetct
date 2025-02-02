@@ -240,6 +240,10 @@ history = hybrid_model.fit(
     verbose=1
 )
 
+# Save the trained Hybrid Quantum-Classical Model
+hybrid_model.save("E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\hybrid_qnn_model.h5")
+print("Hybrid QNN Model saved successfully as 'hybrid_qnn_model.h5'.")
+
 # Predict Malicious TLS Traffic
 y_pred_probs = hybrid_model.predict([X_test.iloc[:, :num_qubits], X_test.iloc[:, num_qubits:]])
 y_pred = np.argmax(y_pred_probs, axis=1)
@@ -249,7 +253,7 @@ malicious_traffic = X_test.iloc[np.where(y_pred == 0)].copy()
 malicious_traffic['Predicted_Label'] = y_pred[np.where(y_pred == 0)]
 
 # Save Malicious TLS Traffic to CSV
-malicious_traffic.to_csv("Malicious_TLS_Traffic.csv", index=False)
+malicious_traffic.to_csv("E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Malicious_TLS_Traffic.csv", index=False)
 print(f"Saved {len(malicious_traffic)} malicious TLS traffic records to 'Malicious_TLS_Traffic.csv'.")
 
 # Plot Training and Validation Accuracy
