@@ -166,13 +166,18 @@ class CustomBatchGenerator(tf.keras.utils.Sequence):
 train_generator = CustomBatchGenerator(X_train_q, X_train_c, y_train_split, batch_size=32)
 val_generator = CustomBatchGenerator(X_val_q, X_val_c, y_val_split, batch_size=32)
 
-# Train the Model
-history = hybrid_model.fit(
-    train_generator,
-    validation_data=val_generator,
-    epochs=100, 
-    verbose=1,
+# Train Hybrid Model (Without SHAP)
+hybrid_model.fit(
+    [X_train.iloc[:, :num_qubits], X_train.iloc[:, num_qubits:]],
+    to_categorical(y_train, num_classes=4),
+    validation_split=0.2,
+    epochs=100,
+    batch_size=32
 )
+
+# Save Model for XAI
+hybrid_model.save("hybrid_model.h5")
+print("Model saved successfully!")
 
 # Predict Malicious TLS Traffic
 y_pred_probs = hybrid_model.predict([X_test.iloc[:, :num_qubits], X_test.iloc[:, num_qubits:]])
