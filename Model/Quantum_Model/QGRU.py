@@ -8,6 +8,7 @@ from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split
 from imblearn.over_sampling import SMOTE
 from tensorflow.keras.utils import to_categorical
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 # Set random seed
 np.random.seed(42)
@@ -40,8 +41,31 @@ tls_traffic[numeric_columns] = tls_traffic[numeric_columns].clip(
     axis=1
 )
 
+# Feature Selection Process
+correlation_matrix = tls_traffic.corr(numeric_only=True)
+target_correlation = correlation_matrix['Label'].drop('Label')
+threshold = 0.14  # Selecting features with absolute correlation > 0.14
+selected_features = target_correlation[abs(target_correlation) > threshold]
+
+# Remove identifier columns if they exist
+identifiers = ['Flow ID', 'Src IP']
+selected_features = selected_features.drop(index=identifiers, errors='ignore')
+
+# Keep only the selected features and the Label
+tls_traffic = tls_traffic[selected_features.index.tolist() + ['Label']]
+if 'Timestamp' in tls_traffic.columns:
+    tls_traffic = tls_traffic.drop(columns=['Timestamp'])
+    print("Timestamp feature removed after feature selection!")
+
+selected_features_list = selected_features.index.tolist()
+if 'Timestamp' in selected_features_list:
+    selected_features_list.remove('Timestamp')
+
+print("Selected Features Based on Correlation with 'Label':")
+print(selected_features_list)
+
 # Apply MinMax Scaling
-tls_traffic[numeric_columns] = MinMaxScaler().fit_transform(tls_traffic[numeric_columns])
+tls_traffic[selected_features_list] = MinMaxScaler().fit_transform(tls_traffic[selected_features_list])
 
 gc.collect()
 
@@ -61,13 +85,16 @@ X_train, X_test, y_train, y_test = train_test_split(X_pca, y, test_size=0.2, ran
 tf.keras.backend.clear_session()
 
 # Define Quantum Circuit
-dev = qml.device("default.qubit", wires=3)
+dev = qml.device("default.qubit", wires=4)
 
 @qml.qnode(dev, interface="tf")
 def quantum_circuit(inputs, weights):
-    qml.AngleEmbedding(inputs, wires=range(3), rotation="Y")
-    qml.StronglyEntanglingLayers(weights, wires=range(3))
-    return [qml.expval(qml.PauliZ(i)) for i in range(3)]
+    qml.Hadamard(wires=0)  # Introduce superposition
+    qml.Hadamard(wires=1)
+    qml.AngleEmbedding(inputs, wires=range(4), rotation="Y")
+    qml.StronglyEntanglingLayers(weights, wires=range(4))
+    qml.BasicEntanglerLayers(weights, wires=range(4))
+    return [qml.expval(qml.PauliZ(i)) for i in range(4)]
 
 # Define Quantum Layer
 class QuantumLayer(tf.keras.layers.Layer):
@@ -88,24 +115,17 @@ def create_hybrid_gru_model(num_features, num_classes=4):
     input_layer = tf.keras.layers.Input(shape=(num_features, 1))
     
     # Quantum Layer
-    quantum_layer = QuantumLayer(3)(input_layer)
+    quantum_layer = QuantumLayer(4)(input_layer)
     quantum_layer = tf.keras.layers.Dense(32, activation="relu")(quantum_layer)
     
-    # GRU Layer
-    gru_layer = tf.keras.layers.GRU(64, return_sequences=True, dropout=0.3)(input_layer)
-    gru_layer = tf.keras.layers.BatchNormalization()(gru_layer)
-    gru_layer = tf.keras.layers.GRU(32, return_sequences=False, dropout=0.3)(gru_layer)
-    gru_layer = tf.keras.layers.BatchNormalization()(gru_layer)
+    # Reduced GRU Layer
+    gru_layer = tf.keras.layers.GRU(32, return_sequences=False, dropout=0.3)(input_layer)
     
     # Combine Quantum and Classical Features
     combined = tf.keras.layers.concatenate([quantum_layer, gru_layer])
     
     # Fully Connected Layers
-    dense_layer = tf.keras.layers.Dense(64, activation='relu')(combined)
-    dense_layer = tf.keras.layers.Dropout(0.3)(dense_layer)
-    dense_layer = tf.keras.layers.Dense(32, activation='relu')(dense_layer)
-    
-    # Output Layer
+    dense_layer = tf.keras.layers.Dense(32, activation='relu')(combined)
     output_layer = tf.keras.layers.Dense(num_classes, activation='softmax')(dense_layer)
     
     model = tf.keras.models.Model(inputs=input_layer, outputs=output_layer)
@@ -137,3 +157,13 @@ history = gru_model.fit(
 # Save the trained model
 gru_model.save("E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\hybrid_gru_model.h5")
 print("Hybrid Quantum GRU Model saved successfully.")
+
+# Evaluate model using RMSE, MSE, and MAE
+y_pred_probs = gru_model.predict(X_test_reshaped)
+mse = mean_squared_error(y_test_categorical, y_pred_probs)
+rmse = np.sqrt(mse)
+mae = mean_absolute_error(y_test_categorical, y_pred_probs)
+
+print(f"MSE: {mse:.4f}")
+print(f"RMSE: {rmse:.4f}")
+print(f"MAE: {mae:.4f}")
