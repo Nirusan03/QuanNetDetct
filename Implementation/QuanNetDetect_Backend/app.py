@@ -32,33 +32,34 @@ hybrid_model = tf.keras.models.load_model(model_path, custom_objects={'QuantumLa
 scaler = joblib.load("E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\scaler.pkl")
 pca = joblib.load("E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\pca.pkl")
 label_encoder = joblib.load("E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\label_encoder.pkl")
-selected_features = joblib.load("E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\selected_features.pkl")
-print("Expected Features:", selected_features)
+scaler_feature_names = scaler.feature_names_in_.tolist()
+
+# Extract expected number of features
+num_features_before_pca = scaler.n_features_in_
+num_features_after_pca = pca.n_components_
+
+print(f"Expected features before PCA: {num_features_before_pca}, after PCA: {num_features_after_pca}")
+print("Expected feature names:", scaler_feature_names)
 
 num_qubits = 3  # Number of quantum features expected
 
 def preprocess_input(data):
     """Preprocess input data for model prediction."""
     try:
-        # Convert input into DataFrame
-        df = pd.DataFrame([data], columns=selected_features)
+        if len(data) != num_features_before_pca:
+            return None, None, f"Invalid input: Expected {num_features_before_pca} features, but received {len(data)}"
 
-        # Validate: Ensure correct feature names
-        missing_features = set(selected_features) - set(df.columns)
-        if missing_features:
-            raise ValueError(f"Missing Features: {missing_features}")
+        df = pd.DataFrame([data], columns=scaler_feature_names)
 
         # Apply preprocessing
-        for col in df.select_dtypes(include=['object']).columns:
-            df[col] = label_encoder.transform(df[col])
-
         data_scaled = scaler.transform(df)
-        data_pca = pca.transform(data_scaled)
+        data_scaled_selected = data_scaled[:, :12]  # Select only first 12 features
+        data_pca = pca.transform(data_scaled_selected)
 
-        return data_pca[:, :num_qubits], data_pca[:, num_qubits:]
+        return data_pca[:, :num_qubits], data_pca[:, num_qubits:], None
 
     except Exception as e:
-        raise ValueError(f"Preprocessing Error: {str(e)}")
+        return None, None, f"Preprocessing Error: {str(e)}"
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -66,33 +67,22 @@ def predict():
     try:
         input_data = request.json.get("features")
         
-        # Validate input format
-        if not isinstance(input_data, list) or len(input_data) != len(selected_features):
-            return jsonify({"error": "Invalid input format. Ensure correct number of features."}), 400
+        if not isinstance(input_data, list):
+            return jsonify({"error": "Invalid input format: Expected list of numerical values."}), 400
         
-        # Convert input values to numbers and validate
-        try:
-            input_data = [float(x) for x in input_data]
-        except ValueError:
-            return jsonify({"error": "Invalid input! Ensure all values are numeric."}), 400
+        quantum_features, classical_features, error = preprocess_input(input_data)
+        if error:
+            return jsonify({"error": error}), 400
 
-        # Preprocess input
-        quantum_features, classical_features = preprocess_input(input_data)
-
-        # Get prediction
         pred_prob = hybrid_model.predict([quantum_features, classical_features])
         pred_label = np.argmax(pred_prob, axis=1)[0]
 
-        # Define Labels
         labels_dict = {0: "Malicious", 1: "Non-Malicious", 2: "Uncertain"}
 
-        return jsonify({"prediction": labels_dict[pred_label], "probabilities": pred_prob.tolist()})
-
-    except ValueError as ve:
-        return jsonify({"error": str(ve)}), 400
+        return jsonify({"prediction": labels_dict.get(pred_label, "Unknown"), "probabilities": pred_prob.tolist()})
 
     except Exception as e:
-        return jsonify({"error": "Internal Server Error"}), 500
+        return jsonify({"error": f"Internal Server Error: {str(e)}"}), 500
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
