@@ -1,43 +1,42 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Container, Card, CardContent, Button, TextField, Typography, Alert } from "@mui/material";
+import { Container, Card, CardContent, Button, Typography, Alert, CircularProgress } from "@mui/material";
 
 const App = () => {
-  const [features, setFeatures] = useState("");
+  const [file, setFile] = useState(null);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFeatures(e.target.value);
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
   };
 
   const handleSubmit = async () => {
+    if (!file) {
+      setError("Please upload a CSV file.");
+      return;
+    }
+    
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    
+    const formData = new FormData();
+    formData.append("file", file);
+    
     try {
-      setError(null);
-      setResult(null);
-
-      // Convert input into an array of numbers
-      const featuresArray = features.split(",").map(val => {
-        const num = Number(val.trim());
-        return isNaN(num) ? null : num;
+      const response = await axios.post("http://127.0.0.1:5000/predict", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
       });
-
-      // Validate: Ensure no NaN values and correct feature length
-      if (featuresArray.includes(null)) {
-        setError("Invalid input! Ensure all values are numbers.");
-        return;
-      }
-
-      console.log("Sending Features:", featuresArray); // Debugging
-
-      // Send request to Flask backend
-      const response = await axios.post("http://127.0.0.1:5000/predict", {
-        features: featuresArray,
-      });
-
+      
       setResult(response.data);
     } catch (err) {
       setError(`Error: ${err.response?.data?.error || "Server not reachable."}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,24 +48,16 @@ const App = () => {
             Quantum Neural Network TLS Traffic Classification
           </Typography>
           
-          <TextField
-            label="Enter Features (comma-separated)"
-            variant="outlined"
-            fullWidth
-            value={features}
-            onChange={handleChange}
-            margin="normal"
-            placeholder="Example: 1.2, 3.5, 0.7, 5.1"
-          />
+          <input type="file" accept=".csv" onChange={handleFileChange} style={{ marginBottom: "15px" }} />
           
-          <Button variant="contained" color="primary" onClick={handleSubmit} fullWidth>
-            Predict
+          <Button variant="contained" color="primary" onClick={handleSubmit} fullWidth disabled={loading}>
+            {loading ? <CircularProgress size={24} /> : "Upload & Predict"}
           </Button>
-
+          
           {/* Display Prediction Result */}
           {result && (
             <Alert severity="success" style={{ marginTop: "20px" }}>
-              Prediction: <strong>{result.prediction}</strong>
+              Predictions: <pre>{JSON.stringify(result, null, 2)}</pre>
             </Alert>
           )}
 
