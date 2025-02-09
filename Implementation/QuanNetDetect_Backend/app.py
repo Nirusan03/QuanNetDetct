@@ -38,9 +38,6 @@ scaler_feature_names = scaler.feature_names_in_.tolist()
 num_features_before_pca = scaler.n_features_in_
 num_features_after_pca = pca.n_components_
 
-print(f"Expected features before PCA: {num_features_before_pca}, after PCA: {num_features_after_pca}")
-print("Expected feature names:", scaler_feature_names)
-
 num_qubits = 3  # Number of quantum features expected
 
 def preprocess_input(data):
@@ -53,7 +50,19 @@ def preprocess_input(data):
 
         # Apply preprocessing
         data_scaled = scaler.transform(df)
-        data_scaled_selected = data_scaled[:, :12]  # Select only first 12 features
+        selected_feature_names = [
+            'Total Bwd packets', 'Bwd Packet Length Min', 'Fwd Header Length', 'Bwd Header Length', 'Bwd Packets/s',
+            'SYN Flag Count', 'PSH Flag Count', 'ACK Flag Count', 'FWD Init Win Bytes', 'Bwd Init Win Bytes', 'Fwd Seg Size Min', 'Bwd Packet Length Mean'
+        ]
+        print("Final selected 12 features for PCA transformation:", selected_feature_names)
+        feature_indices = [scaler_feature_names.index(f) for f in selected_feature_names if f in scaler_feature_names]
+        data_scaled_selected = data_scaled[:, feature_indices]
+        selected_feature_names = [
+            'Total Bwd packets', 'Bwd Packet Length Min', 'Fwd Header Length', 'Bwd Header Length', 'Bwd Packets/s',
+            'SYN Flag Count', 'PSH Flag Count', 'ACK Flag Count', 'FWD Init Win Bytes', 'Bwd Init Win Bytes', 'Fwd Seg Size Min', 
+        ]
+        for name, value in zip(selected_feature_names, data_scaled_selected[0]):
+            print(f"{name}: {value}")
         data_pca = pca.transform(data_scaled_selected)
 
         return data_pca[:, :num_qubits], data_pca[:, num_qubits:], None
@@ -77,7 +86,7 @@ def predict():
         pred_prob = hybrid_model.predict([quantum_features, classical_features])
         pred_label = np.argmax(pred_prob, axis=1)[0]
 
-        labels_dict = {0: "Malicious", 1: "Non-Malicious", 2: "Uncertain"}
+        labels_dict = {0: "Malicious", 1: "Non-Malicious", 2: "Uncertain", 3: "Benign"}
 
         return jsonify({"prediction": labels_dict.get(pred_label, "Unknown"), "probabilities": pred_prob.tolist()})
 
