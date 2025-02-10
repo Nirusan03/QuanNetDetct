@@ -13,6 +13,7 @@ import SecurityIcon from '@mui/icons-material/Security';
 import { styled } from "@mui/material/styles";
 import { Bar } from "react-chartjs-2";
 import { Chart, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
+import { motion } from "framer-motion";  
 
 Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -42,7 +43,8 @@ const StyledCard = styled(Card)({
   backgroundColor: "#f4f6f8",
   borderRadius: "12px",
   textAlign: "center",
-  border: "2px solid #d1d1d1"
+  border: "2px solid #d1d1d1",
+  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)"
 });
 
 const StyledTableContainer = styled(TableContainer)({
@@ -53,7 +55,7 @@ const StyledTableContainer = styled(TableContainer)({
 
 const ChartContainer = styled("div")({
   width: "100%",
-  height: "400px",
+  height: "250px", 
   display: "flex",
   justifyContent: "center",
   alignItems: "center"
@@ -72,6 +74,7 @@ const App = () => {
         label: "TLS Classification Confidence",
         data: [],
         backgroundColor: ["#007bff"],
+        barThickness: 6, // ✅ Thin bars
       }
     ]
   });
@@ -79,40 +82,37 @@ const App = () => {
   const handleFileChange = (e) => {
     if (e.target.files.length > 0) {
       const selectedFile = e.target.files[0];
-  
-      // Check if the file is a CSV
+
       if (!selectedFile.name.endsWith(".csv")) {
         setError("Invalid file type. Please upload a CSV file.");
         setFile(null);
-        setOpen(false);
         return;
       }
-  
+
       setFile(selectedFile);
       setError(null);
-      setOpen(false);
     }
   };
-  
+
   const handleSubmit = async () => {
     setLoading(true);
     setError(null);
     setResult(null);
-  
+
     if (!file) {
       setError("No file selected. Please upload a CSV file before proceeding.");
       setLoading(false);
       return;
     }
-  
+
     const formData = new FormData();
     formData.append("file", file);
-  
+
     try {
       const response = await axios.post("http://127.0.0.1:5000/predict", formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
-  
+
       setResult(response.data);
       updateChartData(response.data);
     } catch (err) {
@@ -121,7 +121,6 @@ const App = () => {
       setLoading(false);
     }
   };
-  
 
   const updateChartData = (data) => {
     if (!data || !data.predictions) return;
@@ -129,20 +128,14 @@ const App = () => {
     const newLabels = data.predictions.map((_, index) => `Sample ${index + 1}`);
     const newData = data.predictions.map((item) => parseFloat(item.confidence.replace("%", "")));
 
-    const maxBars = 10;
-    const limitedLabels = newLabels.slice(-maxBars);
-    const limitedData = newData.slice(-maxBars);
-
     setChartData({
-      labels: limitedLabels,
+      labels: newLabels.slice(-10),
       datasets: [
         {
           label: "TLS Classification Confidence",
-          data: limitedData,
+          data: newData.slice(-10),
           backgroundColor: ["#007bff"],
-          borderColor: ["#0056b3"],
-          borderWidth: 1,
-          barThickness: 30,
+          barThickness: 6 // ✅ Thin bars
         }
       ]
     });
@@ -150,56 +143,44 @@ const App = () => {
 
   return (
     <StyledContainer>
+      {/* Step 1: Choosing the File */}
       <StyledCard elevation={5}>
         <CardContent>
           <Typography variant="h4" gutterBottom style={{ color: "#1976d2", fontWeight: "bold" }}>
             Quantum Neural Network TLS Traffic Classification
           </Typography>
 
-          <Button
-            variant="contained"
-            startIcon={<CloudUploadIcon />}
-            onClick={() => setOpen(true)}
-            style={{ marginBottom: "20px", backgroundColor: "#0288d1", width: "100%" }}
-          >
+          <UploadButton variant="contained" startIcon={<CloudUploadIcon />} onClick={() => document.getElementById('fileInput').click()}>
             Choose File
-          </Button>
+          </UploadButton>
 
-          {error && (
-            <Typography variant="body2" style={{ color: "red", marginTop: "10px" }}>
-              {error}
+          <input id="fileInput" type="file" accept=".csv" style={{ display: "none" }} onChange={handleFileChange} />
+
+          {file && (
+            <Typography variant="body1" style={{ marginTop: "15px", color: "#388e3c", fontWeight: "bold" }}>
+              Selected File: {file.name}
             </Typography>
           )}
 
-          <Dialog open={open} onClose={() => setOpen(false)}>
-            <DialogTitle>Select a File</DialogTitle>
-            <DialogContent>
-              <input type="file" accept=".csv" onChange={handleFileChange} />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setOpen(false)}>Close</Button>
-            </DialogActions>
-          </Dialog>
-
-          {file && <Typography variant="body1" style={{ marginBottom: "15px", color: "#388e3c", fontWeight: "bold" }}>Selected File: {file.name}</Typography>}
-
-          <UploadButton variant="contained" onClick={handleSubmit} disabled={loading}>
-            {loading ? <CircularProgress size={24} style={{ color: "#fff" }} /> : "Upload & Predict"}
-          </UploadButton>
+          {file && (
+            <UploadButton variant="contained" onClick={handleSubmit} disabled={loading} style={{ marginTop: "15px" }}>
+              {loading ? <CircularProgress size={24} style={{ color: "#fff" }} /> : "Upload & Predict"}
+            </UploadButton>
+          )}
         </CardContent>
       </StyledCard>
 
+      {/* Step 3: API Result */}
       {result && (
-        <StyledCard elevation={5} style={{ marginTop: "20px", padding: "15px", textAlign: "left" }}>
-          <Typography variant="h5" gutterBottom style={{ color: "#1976d2", fontWeight: "bold" }}>
-            API Response:
-          </Typography>
+        <StyledCard elevation={5} style={{ marginTop: "20px" }}>
+          <Typography variant="h5">API Response</Typography>
           <pre style={{ backgroundColor: "#eef", padding: "10px", borderRadius: "5px", whiteSpace: "pre-wrap" }}>
             {JSON.stringify(result, null, 2)}
           </pre>
         </StyledCard>
       )}
 
+      {/* Step 4: Table (Fixed Layout) */}
       {result && (
         <StyledCard elevation={5} style={{ marginTop: "20px" }}>
           <StyledTableContainer component={Paper}>
@@ -216,28 +197,11 @@ const App = () => {
               <TableBody>
                 {result.predictions.map((item, index) => (
                   <TableRow key={index}>
-                    <TableCell>
-                      <ListItemIcon>
-                        {item.prediction.includes("Benign") ? <CheckCircleIcon style={{ color: "green" }} /> : <ErrorIcon style={{ color: "red" }} />}
-                      </ListItemIcon>
-                      {item.prediction}
-                    </TableCell>
+                    <TableCell><CheckCircleIcon style={{ color: "green" }} /> {item.prediction}</TableCell>
                     <TableCell>{item.description}</TableCell>
                     <TableCell>{item.confidence}</TableCell>
-                    <TableCell>
-                      <List>
-                        {item.potential_risks.map((risk, idx) => (
-                          <ListItem key={idx}><WarningIcon style={{ color: "orange" }} /> {risk}</ListItem>
-                        ))}
-                      </List>
-                    </TableCell>
-                    <TableCell>
-                      <List>
-                        {item.recommended_actions.map((action, idx) => (
-                          <ListItem key={idx}><SecurityIcon style={{ color: "blue" }} /> {action}</ListItem>
-                        ))}
-                      </List>
-                    </TableCell>
+                    <TableCell>{item.potential_risks.map((risk, i) => (<ListItem key={i}><WarningIcon style={{ color: "orange" }} /> {risk}</ListItem>))}</TableCell>
+                    <TableCell>{item.recommended_actions.map((action, i) => (<ListItem key={i}><SecurityIcon style={{ color: "blue" }} /> {action}</ListItem>))}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -246,9 +210,9 @@ const App = () => {
         </StyledCard>
       )}
 
+      {/* Step 5: Graph (Thin Bars) */}
       {result && (
         <StyledCard elevation={5} style={{ marginTop: "20px" }}>
-          <Typography variant="h5">TLS Traffic Trends</Typography>
           <ChartContainer>
             <Bar data={chartData} options={{ responsive: true, maintainAspectRatio: false }} />
           </ChartContainer>
