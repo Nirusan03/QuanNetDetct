@@ -100,9 +100,72 @@ def predict():
         pred_probs = hybrid_model.predict([quantum_features, classical_features])
         pred_labels = np.argmax(pred_probs, axis=1)
 
-        labels_dict = {0: "Malicious", 1: "Non-Malicious", 2: "Uncertain", 3: "Benign"}
-        predictions = [{"index": idx, "prediction": labels_dict.get(label, "Unknown"), "probabilities": prob.tolist()} 
-                       for idx, (label, prob) in enumerate(zip(pred_labels, pred_probs))]
+        # Define TLS-specific label descriptions
+        labels_dict = {
+            0: {
+                "label": "Malicious TLS Traffic",
+                "description": "This TLS session has characteristics commonly associated with cyber threats such as phishing, malware communication, or unauthorized access.",
+                "potential_risks": [
+                    "Encrypted communication with a suspicious server.",
+                    "Possible exfiltration of sensitive data.",
+                    "TLS handshake anomalies indicating an attack."
+                ],
+                "recommended_actions": [
+                    "Investigate the destination server and its reputation.",
+                    "Analyze packet payloads (if possible) for malicious patterns.",
+                    "Consider blocking the IP address if it appears in threat databases."
+                ]
+            },
+            1: {
+                "label": "Non-Malicious TLS Traffic",
+                "description": "This TLS flow is classified as safe and does not exhibit signs of an attack or anomaly.",
+                "potential_risks": [
+                    "Minimal risks detected, as the communication pattern aligns with normal TLS usage."
+                ],
+                "recommended_actions": [
+                    "No immediate action required.",
+                    "Continue monitoring for any unusual patterns over time."
+                ]
+            },
+            2: {
+                "label": "Uncertain TLS Traffic",
+                "description": "The model is unable to confidently classify this traffic. It may contain unusual characteristics but lacks a strong indication of malicious activity.",
+                "potential_risks": [
+                    "TLS traffic does not clearly match either malicious or safe patterns.",
+                    "Anomalies such as inconsistent handshake messages, timing irregularities, or unexpected packet sizes."
+                ],
+                "recommended_actions": [
+                    "Conduct a deeper forensic analysis using additional network indicators.",
+                    "Check historical logs to see if this IP or TLS pattern has been observed before.",
+                    "Consider sandboxing the communication to analyze behavior."
+                ]
+            },
+            3: {
+                "label": "Benign TLS Traffic",
+                "description": "This TLS communication is completely normal and aligns with expected secure traffic behavior.",
+                "potential_risks": [
+                    "No security concerns detected.",
+                    "Consistent with routine encrypted traffic such as web browsing, email exchange, or API communication."
+                ],
+                "recommended_actions": [
+                    "No action required.",
+                    "Ensure general security policies are in place (e.g., TLS version enforcement, certificate validation)."
+                ]
+            }
+        }
+
+        predictions = []
+        for idx, (label, prob) in enumerate(zip(pred_labels, pred_probs)):
+            confidence = round(float(max(prob)) * 100, 2)  # Convert confidence to percentage
+            predictions.append({
+                "index": idx,
+                "prediction": labels_dict[label]["label"],
+                "description": labels_dict[label]["description"],
+                "confidence": f"{confidence}%",
+                "potential_risks": labels_dict[label]["potential_risks"],
+                "recommended_actions": labels_dict[label]["recommended_actions"],
+                "probabilities": prob.tolist()
+            })
 
         return jsonify({"predictions": predictions})
 
