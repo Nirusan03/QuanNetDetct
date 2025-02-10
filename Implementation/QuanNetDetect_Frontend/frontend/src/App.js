@@ -78,38 +78,50 @@ const App = () => {
 
   const handleFileChange = (e) => {
     if (e.target.files.length > 0) {
-      setFile(e.target.files[0]);
+      const selectedFile = e.target.files[0];
+  
+      // Check if the file is a CSV
+      if (!selectedFile.name.endsWith(".csv")) {
+        setError("Invalid file type. Please upload a CSV file.");
+        setFile(null);
+        setOpen(false);
+        return;
+      }
+  
+      setFile(selectedFile);
       setError(null);
       setOpen(false);
     }
   };
-
+  
   const handleSubmit = async () => {
     setLoading(true);
     setError(null);
     setResult(null);
-
-    if (file) {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      try {
-        const response = await axios.post("http://127.0.0.1:5000/predict", formData, {
-          headers: { "Content-Type": "multipart/form-data" }
-        });
-
-        setResult(response.data);
-        updateChartData(response.data);
-      } catch (err) {
-        setError(`Error: ${err.response?.data?.error || "Server not reachable."}`);
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      setError("Please upload a CSV file.");
+  
+    if (!file) {
+      setError("No file selected. Please upload a CSV file before proceeding.");
+      setLoading(false);
+      return;
+    }
+  
+    const formData = new FormData();
+    formData.append("file", file);
+  
+    try {
+      const response = await axios.post("http://127.0.0.1:5000/predict", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+  
+      setResult(response.data);
+      updateChartData(response.data);
+    } catch (err) {
+      setError(`Error: ${err.response?.data?.error || "Server not reachable."}`);
+    } finally {
       setLoading(false);
     }
   };
+  
 
   const updateChartData = (data) => {
     if (!data || !data.predictions) return;
@@ -152,6 +164,12 @@ const App = () => {
           >
             Choose File
           </Button>
+
+          {error && (
+            <Typography variant="body2" style={{ color: "red", marginTop: "10px" }}>
+              {error}
+            </Typography>
+          )}
 
           <Dialog open={open} onClose={() => setOpen(false)}>
             <DialogTitle>Select a File</DialogTitle>
