@@ -38,15 +38,33 @@ num_features_before_pca = scaler.n_features_in_
 num_features_after_pca = pca.n_components_
 num_qubits = 3  # Number of quantum features expected
 
+def validate_csv(file):
+    """Check if the uploaded file is a valid CSV."""
+    try:
+        df = pd.read_csv(io.StringIO(file.read().decode("utf-8")))
+        
+        # Ensure it contains the required number of columns
+        if len(df.columns) != num_features_before_pca:
+            return None, f"Invalid CSV format. Expected {num_features_before_pca} features, but received {len(df.columns)}."
+        
+        # Check for missing values
+        if df.isnull().values.any():
+            return None, "CSV contains missing values. Please remove or fill missing data."
+
+        # Ensure all values are numeric
+        if not all(df.applymap(lambda x: isinstance(x, (int, float))).all()):
+            return None, "CSV contains non-numeric values. Please upload a properly formatted dataset."
+        
+        return df, None
+    except Exception as e:
+        return None, f"Error reading CSV file: {str(e)}"
+
 def preprocess_input(dataframe):
     """Preprocess input DataFrame for model prediction."""
     try:
-        if len(dataframe.columns) != num_features_before_pca:
-            return None, f"Invalid input: Expected {num_features_before_pca} features, but received {len(dataframe.columns)}"
-
         df = dataframe.copy()
-        df = df[scaler_feature_names]
-        
+        df = df[scaler_feature_names]  # Ensure correct feature order
+
         # Apply preprocessing
         data_scaled = scaler.transform(df)
 
@@ -60,7 +78,6 @@ def preprocess_input(dataframe):
         data_pca = pca.transform(data_scaled_selected)
 
         return data_pca[:, :num_qubits], data_pca[:, num_qubits:], None
-
     except Exception as e:
         return None, f"Preprocessing Error: {str(e)}"
 
@@ -70,10 +87,16 @@ def predict():
     try:
         if "file" in request.files:
             file = request.files["file"]
+
+            # Validate file existence
             if file.filename == "":
                 return jsonify({"error": "Empty file uploaded."}), 400
 
-            df = pd.read_csv(io.StringIO(file.read().decode("utf-8")))
+            # Validate and process CSV
+            df, error = validate_csv(file)
+            if error:
+                return jsonify({"error": error}), 400
+
             quantum_features, classical_features, error = preprocess_input(df)
             if error:
                 return jsonify({"error": error}), 400
@@ -89,6 +112,7 @@ def predict():
                 return jsonify({"error": f"Invalid input length. Expected {num_features_before_pca} features, received {len(features)}"}), 400
 
             df = pd.DataFrame([features], columns=scaler_feature_names)
+            
             quantum_features, classical_features, error = preprocess_input(df)
             if error:
                 return jsonify({"error": error}), 400
@@ -100,6 +124,7 @@ def predict():
         pred_probs = hybrid_model.predict([quantum_features, classical_features])
         pred_labels = np.argmax(pred_probs, axis=1)
 
+        # Define TLS-specific label descriptions
         # Define TLS-specific label descriptions
         labels_dict = {
             0: {
