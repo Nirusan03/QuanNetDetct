@@ -41,20 +41,13 @@ num_qubits = 3  # Number of quantum features expected
 def preprocess_input(dataframe):
     """Preprocess input DataFrame for model prediction."""
     try:
-        print("Received DataFrame for Preprocessing:")
-        print(dataframe.head())  # Debug: Print first few rows
-
-        # Ensure the correct number of features are present
         if len(dataframe.columns) != num_features_before_pca:
-            error_msg = f"Invalid input: Expected {num_features_before_pca} features, but received {len(dataframe.columns)}"
-            print(error_msg)  # Debug message
-            return None, None, error_msg
+            return None, f"Invalid input: Expected {num_features_before_pca} features, but received {len(dataframe.columns)}"
 
-        # Ensure column order matches the scaler
         df = dataframe.copy()
-        df = df[scaler_feature_names]  # Ensure order consistency
+        df = df[scaler_feature_names]
         
-        print("Applying Scaling...")  # Debug
+        # Apply preprocessing
         data_scaled = scaler.transform(df)
 
         selected_feature_names = [
@@ -62,42 +55,46 @@ def preprocess_input(dataframe):
             'SYN Flag Count', 'PSH Flag Count', 'ACK Flag Count', 'FWD Init Win Bytes', 'Bwd Init Win Bytes', 'Fwd Seg Size Min', 'Bwd Packet Length Mean'
         ]
         
-        # Ensure selected features exist
         feature_indices = [scaler_feature_names.index(f) for f in selected_feature_names if f in scaler_feature_names]
-        if not feature_indices:
-            error_msg = "No valid features found in dataset!"
-            print(error_msg)
-            return None, None, error_msg
-
-        print("Applying PCA...")  # Debug
         data_scaled_selected = data_scaled[:, feature_indices]
         data_pca = pca.transform(data_scaled_selected)
 
-        print("Preprocessing Successful!")  # Debug
         return data_pca[:, :num_qubits], data_pca[:, num_qubits:], None
 
     except Exception as e:
-        error_msg = f"Preprocessing Error: {str(e)}"
-        print(error_msg)  # Debug
-        return None, None, error_msg
+        return None, f"Preprocessing Error: {str(e)}"
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    """Handle CSV file upload, preprocess it, and predict traffic classification."""
+    """Handle both JSON feature input and CSV file upload."""
     try:
-        if "file" not in request.files:
-            return jsonify({"error": "No file uploaded. Please upload a CSV file."}), 400
+        if "file" in request.files:
+            file = request.files["file"]
+            if file.filename == "":
+                return jsonify({"error": "Empty file uploaded."}), 400
 
-        file = request.files["file"]
-        if file.filename == "":
-            return jsonify({"error": "Empty file uploaded."}), 400
+            df = pd.read_csv(io.StringIO(file.read().decode("utf-8")))
+            quantum_features, classical_features, error = preprocess_input(df)
+            if error:
+                return jsonify({"error": error}), 400
 
-        # Read the CSV file into a DataFrame
-        df = pd.read_csv(io.StringIO(file.read().decode("utf-8")))
+        elif request.is_json:
+            json_data = request.get_json()
+            features = json_data.get("features", None)
 
-        quantum_features, classical_features, error = preprocess_input(df)
-        if error:
-            return jsonify({"error": error}), 400
+            if features is None or not isinstance(features, list):
+                return jsonify({"error": "Invalid JSON format. Expected a list of numerical features."}), 400
+
+            if len(features) != num_features_before_pca:
+                return jsonify({"error": f"Invalid input length. Expected {num_features_before_pca} features, received {len(features)}"}), 400
+
+            df = pd.DataFrame([features], columns=scaler_feature_names)
+            quantum_features, classical_features, error = preprocess_input(df)
+            if error:
+                return jsonify({"error": error}), 400
+
+        else:
+            return jsonify({"error": "No valid input provided. Please upload a CSV file or send JSON features."}), 400
 
         # Make predictions
         pred_probs = hybrid_model.predict([quantum_features, classical_features])
