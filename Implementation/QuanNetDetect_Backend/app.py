@@ -91,7 +91,6 @@ def predict():
             # Validate file existence
             if file.filename == "":
                 return jsonify({"error": "Empty file uploaded."}), 400
-
             # Validate and process CSV
             df, error = validate_csv(file)
             if error:
