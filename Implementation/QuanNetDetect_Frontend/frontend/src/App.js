@@ -7,7 +7,6 @@ import {
 } from "@mui/material";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ErrorIcon from '@mui/icons-material/Error';
 import WarningIcon from '@mui/icons-material/Warning';
 import SecurityIcon from '@mui/icons-material/Security';
 import { styled } from "@mui/material/styles";
@@ -16,6 +15,7 @@ import { Chart, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend }
 import { Accordion, AccordionSummary, AccordionDetails, Box } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { motion } from "framer-motion";
+import DownloadIcon from "@mui/icons-material/Download";
 
 Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -142,7 +142,7 @@ const App = () => {
       ]
     });
   };
-
+  
   return (
     <StyledContainer>
       {/* Step 1: Choosing the File */}
@@ -265,6 +265,63 @@ const App = () => {
               </TableBody>
             </Table>
           </StyledTableContainer>
+        </StyledCard>
+      )}
+
+      {result && (
+        <StyledCard elevation={5} style={{ marginTop: "20px", padding: "20px" }}>
+          <Typography variant="h5" gutterBottom style={{ color: "#1976d2", fontWeight: "bold" }}>
+            Detection Report & Metrics
+          </Typography>
+
+          {/* Detection Report Section */}
+          {result.report ? (
+            <Accordion style={{ backgroundColor: "#e3f2fd", marginBottom: "10px" }}>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />} style={{ fontWeight: "bold", color: "#1565c0" }}>
+                Detection Report
+              </AccordionSummary>
+              <AccordionDetails>
+                <Paper style={{ padding: "10px", backgroundColor: "#f5f5f5", borderRadius: "8px" }}>
+                  <Typography variant="body1" style={{ fontFamily: "monospace", whiteSpace: "pre-wrap" }}>
+                    {JSON.stringify(result.report, null, 2)}
+                  </Typography>
+                </Paper>
+              </AccordionDetails>
+            </Accordion>
+          ) : (
+            <Typography variant="body1" style={{ color: "gray", fontStyle: "italic" }}>No detection report available</Typography>
+          )}
+
+          {/* Evaluation Metrics Section */}
+          {result.metrics ? (
+            <Accordion style={{ backgroundColor: "#e3f2fd", marginBottom: "10px" }}>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />} style={{ fontWeight: "bold", color: "#1565c0" }}>
+                Evaluation Metrics
+              </AccordionSummary>
+              <AccordionDetails>
+                <Box>
+                  {Object.entries(result.metrics || {}).map(([key, value], index) => (
+                    <Typography key={index} style={{ fontSize: "14px", marginBottom: "5px" }}>
+                      <strong style={{ color: "#1565c0" }}>{key.replace(/_/g, " ")}:</strong> {value}
+                    </Typography>
+                  ))}
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+          ) : (
+            <Typography variant="body1" style={{ color: "gray", fontStyle: "italic" }}>No evaluation metrics available</Typography>
+          )}
+
+          {/* Download Reports */}
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<DownloadIcon />}
+            href="http://127.0.0.1:5000/download-report"
+            style={{ marginTop: "10px" }}
+          >
+            Download Detection Report
+          </Button>
         </StyledCard>
       )}
 

@@ -1,10 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import tensorflow as tf
 import numpy as np
 import pandas as pd
 import joblib
-import io
+import io, os
 
 # Define QuantumLayer
 class QuantumLayer(tf.keras.layers.Layer):
@@ -20,6 +20,11 @@ class QuantumLayer(tf.keras.layers.Layer):
         config = super().get_config()
         config.update({"num_qubits": self.num_qubits})
         return config
+    
+
+# Define the directory where reports will be saved
+REPORTS_DIR = os.path.join(os.getcwd(), "reports")
+REPORT_PATH = os.path.join(REPORTS_DIR, "detection_report.csv")
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -37,6 +42,22 @@ scaler_feature_names = scaler.feature_names_in_.tolist()
 num_features_before_pca = scaler.n_features_in_
 num_features_after_pca = pca.n_components_
 num_qubits = 3  # Number of quantum features expected
+
+mock_result = {
+    "report": {
+        "total_samples": 1000,
+        "malicious_detected": 120,
+        "benign_detected": 880,
+        "false_positives": 5,
+        "false_negatives": 8
+    },
+    "metrics": {
+        "accuracy": 0.98,
+        "precision": 0.97,
+        "recall": 0.95,
+        "f1_score": 0.96
+    }
+}
 
 def validate_csv(file):
     """Check if the uploaded file is a valid CSV."""
@@ -197,6 +218,38 @@ def predict():
 
     except Exception as e:
         return jsonify({"error": f"Internal Server Error: {str(e)}"}), 500
+
+@app.route("/get-report", methods=["GET"])
+def get_report():
+    return jsonify(mock_result)
+
+@app.route("/download-report", methods=["GET"])
+def download_report():
+    try:
+        # Ensure the reports directory exists
+        os.makedirs(REPORTS_DIR, exist_ok=True)
+
+        # Convert report and metrics to DataFrames
+        report_df = pd.DataFrame.from_dict(mock_result["report"], orient="index", columns=["Value"])
+        metrics_df = pd.DataFrame.from_dict(mock_result["metrics"], orient="index", columns=["Value"])
+
+        # Write data to CSV
+        with open(REPORT_PATH, "w") as f:
+            f.write("Detection Report\n")
+        report_df.to_csv(REPORT_PATH, mode="a")
+
+        with open(REPORT_PATH, "a") as f:
+            f.write("\nEvaluation Metrics\n")
+        metrics_df.to_csv(REPORT_PATH, mode="a")
+
+    except Exception as e:
+        return jsonify({"error": f"Failed to generate report: {str(e)}"}), 500
+
+    # Ensure file exists before sending
+    if not os.path.exists(REPORT_PATH):
+        return jsonify({"error": "Report file was not generated"}), 500
+
+    return send_file(REPORT_PATH, as_attachment=True)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
