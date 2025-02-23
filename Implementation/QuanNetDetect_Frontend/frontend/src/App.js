@@ -172,11 +172,11 @@ const App = () => {
 
       {/* Step 3: API Result */}
       {result && (
-        <StyledCard elevation={5} style={{ marginTop: "20px" }}>
-          <Typography variant="h5">API Response</Typography>
-          <pre style={{ backgroundColor: "#eef", padding: "10px", borderRadius: "5px", whiteSpace: "pre-wrap" }}>
+        <StyledCard elevation={5} style={{ marginTop: "20px", padding: "20px" }}>
+          <Typography variant="h5" gutterBottom>API Response</Typography>
+          <Paper style={{ backgroundColor: "#eef", padding: "15px", borderRadius: "8px", whiteSpace: "pre-wrap", textAlign: "left", fontFamily: "monospace" }}>
             {JSON.stringify(result, null, 2)}
-          </pre>
+          </Paper>
         </StyledCard>
       )}
 
