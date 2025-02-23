@@ -76,7 +76,7 @@ const App = () => {
         label: "TLS Classification Confidence",
         data: [],
         backgroundColor: ["#007bff"],
-        barThickness: 6, // ✅ Thin bars
+        barThickness: 6,
       }
     ]
   });
