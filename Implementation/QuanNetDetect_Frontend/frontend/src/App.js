@@ -13,7 +13,9 @@ import SecurityIcon from '@mui/icons-material/Security';
 import { styled } from "@mui/material/styles";
 import { Bar } from "react-chartjs-2";
 import { Chart, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
-import { motion } from "framer-motion";  
+import { Accordion, AccordionSummary, AccordionDetails, Box } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { motion } from "framer-motion";
 
 Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -172,12 +174,68 @@ const App = () => {
 
       {/* Step 3: API Result */}
       {result && (
-        <StyledCard elevation={5} style={{ marginTop: "20px", padding: "20px" }}>
-          <Typography variant="h5" gutterBottom>API Response</Typography>
-          <Paper style={{ backgroundColor: "#eef", padding: "15px", borderRadius: "8px", whiteSpace: "pre-wrap", textAlign: "left", fontFamily: "monospace" }}>
-            {JSON.stringify(result, null, 2)}
+      <StyledCard elevation={5} style={{ marginTop: "20px", padding: "20px" }}>
+        <Typography variant="h5" gutterBottom style={{ color: "#1976d2", fontWeight: "bold" }}>
+          API Response
+        </Typography>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <Paper
+            elevation={3}
+            style={{
+              backgroundColor: "#f5f5f5",
+              padding: "15px",
+              borderRadius: "8px",
+              whiteSpace: "pre-wrap",
+              textAlign: "left",
+              fontFamily: "monospace",
+              overflowX: "auto",
+              boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)"
+            }}
+          >
+            {Object.entries(result).map(([key, value], index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
+                <Accordion style={{ backgroundColor: "#e3f2fd", marginBottom: "10px" }}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />} style={{ fontWeight: "bold", color: "#1565c0" }}>
+                    {key.replace(/_/g, " ").toUpperCase()}
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    {Array.isArray(value) ? (
+                      value.map((item, idx) => (
+                        <Box key={idx} style={{ paddingLeft: "20px", marginBottom: "5px" }}>
+                          {Object.entries(item).map(([subKey, subValue], subIdx) => (
+                            <Typography
+                              key={subIdx}
+                              style={{
+                                marginLeft: "10px",
+                                fontSize: "14px",
+                                color: subKey.includes("confidence") ? "#2e7d32" : "#000"
+                              }}
+                            >
+                              <strong style={{ color: "#1565c0" }}>{subKey.replace(/_/g, " ")}:</strong>{" "}
+                              {typeof subValue === "object" ? JSON.stringify(subValue, null, 2) : subValue}
+                            </Typography>
+                          ))}
+                        </Box>
+                      ))
+                    ) : (
+                      <Typography style={{ marginLeft: "10px" }}>{JSON.stringify(value, null, 2)}</Typography>
+                    )}
+                  </AccordionDetails>
+                </Accordion>
+              </motion.div>
+            ))}
           </Paper>
-        </StyledCard>
+        </motion.div>
+      </StyledCard>
       )}
 
       {/* Step 4: Table (Fixed Layout) */}
