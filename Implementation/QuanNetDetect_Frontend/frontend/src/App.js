@@ -176,7 +176,7 @@ const App = () => {
       {result && (
       <StyledCard elevation={5} style={{ marginTop: "20px", padding: "20px" }}>
         <Typography variant="h5" gutterBottom style={{ color: "#1976d2", fontWeight: "bold" }}>
-          API Response
+          Prediction Results
         </Typography>
         <motion.div
           initial={{ opacity: 0, y: 10 }}
