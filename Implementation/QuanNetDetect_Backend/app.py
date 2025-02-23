@@ -60,7 +60,6 @@ def validate_csv(file):
         return None, f"Error reading CSV file: {str(e)}"
 
 def preprocess_input(dataframe):
-    """Preprocess input DataFrame for model prediction."""
     try:
         df = dataframe.copy()
         df = df[scaler_feature_names]  # Ensure correct feature order
@@ -69,17 +68,20 @@ def preprocess_input(dataframe):
         data_scaled = scaler.transform(df)
 
         selected_feature_names = [
-            'Total Bwd packets', 'Bwd Packet Length Min', 'Fwd Header Length', 'Bwd Header Length', 'Bwd Packets/s',
-            'SYN Flag Count', 'PSH Flag Count', 'ACK Flag Count', 'FWD Init Win Bytes', 'Bwd Init Win Bytes', 'Fwd Seg Size Min', 'Bwd Packet Length Mean'
+            'Total Bwd packets', 'Bwd Packet Length Min', 'Fwd Header Length', 
+            'Bwd Header Length', 'Bwd Packets/s', 'SYN Flag Count', 'PSH Flag Count', 
+            'ACK Flag Count', 'FWD Init Win Bytes', 'Bwd Init Win Bytes', 
+            'Fwd Seg Size Min', 'Bwd Packet Length Mean'
         ]
         
         feature_indices = [scaler_feature_names.index(f) for f in selected_feature_names if f in scaler_feature_names]
-        data_scaled_selected = data_scaled[:, feature_indices]
+        data_scaled_selected = data_scaled[:, feature_indices]  # Ensure only selected features are used
         data_pca = pca.transform(data_scaled_selected)
 
-        return data_pca[:, :num_qubits], data_pca[:, num_qubits:], None
+        return data_pca[:, :num_qubits], data_pca[:, num_qubits:], None  # Ensure three values are returned
     except Exception as e:
-        return None, f"Preprocessing Error: {str(e)}"
+        return None, None, f"Preprocessing Error: {str(e)}"  # Ensure three values are returned even on error
+
 
 @app.route("/predict", methods=["POST"])
 def predict():
