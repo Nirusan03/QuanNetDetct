@@ -1,0 +1,10 @@
+*) Create TLS network - last plan
+*) Introduce anomalies
+   0) Filter the non-anomaly and anomaly network traffic.
+   ii) Select the tls based features with a specific dataset, and non anomaly or anomaly.
+   iii) Plot and see the dataset points of anomaly datapoints.
+   iv) Introduce the anomaly datapoint to the new tls traffic dataset.
+
+Two solutions I can go with:
+1. Mail to isala about the findings about darknet and Cesnet dataset (say this ds does not cointains anomaly).
+2. Ask how to scope down project.
