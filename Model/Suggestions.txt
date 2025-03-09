@@ -8,3 +8,9 @@
 Two solutions I can go with:
 1. Mail to isala about the findings about darknet and Cesnet dataset (say this ds does not cointains anomaly).
 2. Ask how to scope down project.
+
+================
+
+*) Go with initial port selection i have done.
+*) Classifying what kind of traffic it is in the darknet dataset - Tor, non-tor, vpn.
+*) Train the dataset with cic 2018 and for real world testing use cisnet dataset.
