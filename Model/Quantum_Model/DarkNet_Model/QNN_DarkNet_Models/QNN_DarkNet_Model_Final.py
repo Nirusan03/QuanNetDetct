@@ -5,6 +5,7 @@ from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 from sklearn.decomposition import PCA
 from tensorflow.keras.utils import to_categorical
 from imblearn.over_sampling import SMOTE
+from sklearn.preprocessing import OneHotEncoder
 
 import pennylane as qml
 import matplotlib.pyplot as plt
@@ -145,6 +146,13 @@ def quantum_circuit(inputs, weights):
     qml.AngleEmbedding(inputs, wires=range(num_qubits), rotation="Y")
     qml.StronglyEntanglingLayers(weights, wires=range(num_qubits))
     return [qml.expval(qml.PauliZ(i)) for i in range(num_qubits)]
+
+# Define Sample Input (Quantum Features)
+sample_input = np.array([0.5, 0.2, -0.3])  # Example input for 3 qubits
+
+# Define Sample Weights (Required for StronglyEntanglingLayers)
+num_layers = 2  # Define the number of layers for entanglement
+sample_weights = np.random.randn(num_layers, num_qubits, 3)
 
 # Run the circuit to get expectation values
 expectation_values = quantum_circuit(sample_input, sample_weights)
