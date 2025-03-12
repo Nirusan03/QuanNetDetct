@@ -1,0 +1,3 @@
+*) Enhanced and restructured dataset version of CIC-2017
+*) 4. DNS over HTTPS ( BCCC-CIRA-CIC-DoHBrw-2020 ) - Contains malicious network traffic
+*) But  Focuses on DNS over HTTPS (DoH), not general TLS attack detection.
