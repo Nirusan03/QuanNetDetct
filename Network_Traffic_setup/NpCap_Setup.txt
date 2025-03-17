@@ -1,0 +1,10 @@
+Cmd : cd C:\Program Files\Npcap
+CMD : NPFInstall.exe -i
+output : The npf service was successfully installed.
+
+CMD : sc create npf binPath= "C:\Windows\System32\drivers\npcap.sys" type= kernel start= auto
+OUTPUT: [SC] CreateService SUCCESS
+
+CMD : sc query npf
+OUTPUT : SERVICE_NAME: npf
+DISPLAY_NAME: Npcap Packet Driver (NPCAP)
