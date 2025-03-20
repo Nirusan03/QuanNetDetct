@@ -240,7 +240,6 @@ train_generator = CustomBatchGenerator(X_train_q, X_train_c, y_train_split, batc
 val_generator = CustomBatchGenerator(X_val_q, X_val_c, y_val_split, batch_size=32)
 
 # Train the Model
-# Train the Model
 history = hybrid_model.fit(
     train_generator,
     validation_data=val_generator,
