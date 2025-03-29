@@ -1,7 +1,7 @@
 # QuanNetDetect
 
 This project implements a **Hybrid Quantum-Classical Neural Network (QNN)** for detecting **malicious TLS traffic** using the **Darknet 2020 dataset** and **CSE-CIC-IDS2018 dataset**. The model is served using a Flask API, and a React frontend provides an interface for inputting network traffic features and receiving predictions.
-
+ 
 ---
 
 ## **🚀 Features**
