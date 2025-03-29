@@ -2,9 +2,11 @@ import os
 import warnings
 import logging
 
-# --- Suppress ALL logs before importing TensorFlow ---
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Only show ERRORs
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # Force disable GPU & CUDA logs
+# Suppress ALL logs before importing TensorFlow 
+# Only show ERRORs
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+# Force disable GPU & CUDA logs
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 # Suppress all Python & TensorFlow warnings
 warnings.filterwarnings("ignore")
@@ -24,7 +26,7 @@ import pennylane as qml
 # Suppress Autograph logs
 tf.autograph.set_verbosity(0)
 
-# ------------------ Model Configuration ------------------
+# Model Configuration
 class ModelConfig:
     def __init__(self):
         self.quantum_feature_count = 30
@@ -35,7 +37,7 @@ class ModelConfig:
 
 config = ModelConfig()
 
-# ------------------ Quantum Circuit ------------------
+# Quantum Circuit
 dev = qml.device("default.qubit.tf", wires=config.num_qubits)
 
 @qml.qnode(dev, interface="tf", diff_method="backprop")
@@ -50,7 +52,7 @@ def quantum_circuit(inputs, weights):
 
     return [qml.expval(qml.PauliZ(i)) for i in range(config.num_qubits)]
 
-# ------------------ Custom Quantum Layer ------------------
+# Custom Quantum Layer
 class QuantumLayer(tf.keras.layers.Layer):
     def __init__(self, num_qubits, num_layers, **kwargs):
         super().__init__(**kwargs)
@@ -81,7 +83,7 @@ class QuantumLayer(tf.keras.layers.Layer):
     def get_config(self):
         return {'num_qubits': self.num_qubits, 'num_layers': self.num_layers}
 
-# ------------------ Load Trained Model ------------------
+# Load Trained Model
 model_path = r"e:\\Studies\\IIT\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Quantum_Model\DoS2019\\trained_models\\QNN_DDos2019.h5"
 
 model = tf.keras.models.load_model(
@@ -90,7 +92,7 @@ model = tf.keras.models.load_model(
     compile=False
 )
 
-# ------------------ Model Summary and Info ------------------
+# Model Summary and Info
 model.summary()
 
 print("\nModel Inputs:")
