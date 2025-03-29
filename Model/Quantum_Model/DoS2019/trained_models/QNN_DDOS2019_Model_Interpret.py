@@ -1,6 +1,9 @@
 import os
 import warnings
 import logging
+import pandas as pd
+import numpy as np
+
 
 # Suppress ALL logs before importing TensorFlow 
 # Only show ERRORs
@@ -84,7 +87,7 @@ class QuantumLayer(tf.keras.layers.Layer):
         return {'num_qubits': self.num_qubits, 'num_layers': self.num_layers}
 
 # Load Trained Model
-model_path = r"e:\\Studies\\IIT\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Quantum_Model\DoS2019\\trained_models\\QNN_DDos2019.h5"
+model_path = r"e:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Quantum_Model\DoS2019\\trained_models\\QNN_DDos2019.h5"
 
 model = tf.keras.models.load_model(
     model_path,
@@ -101,3 +104,25 @@ for i, inp in enumerate(model.inputs):
 
 print("\nModel Output:")
 print(f"Name = {model.output.name}, Shape = {model.output.shape}, Dtype = {model.output.dtype}")
+
+# Load the test CSV
+test_df = pd.read_csv(r"e:\Studies\IIT\4 - Forth Year\Final Year Project\QuanNetDetct\Model\Quantum_Model\DoS2019\trained_models\sample_test_data.csv")
+
+# Convert to NumPy
+X_test = test_df.values.astype(np.float32)
+
+# Run prediction
+predictions = model.predict([X_test[:, :30], X_test[:, :30]])
+predicted_indices = np.argmax(predictions, axis=1)
+
+# Correct Class Label Mapping 
+class_names = ['DrDoS_DNS', 'DrDoS_LDAP', 'Syn', 'LDAP', 'BENIGN']
+predicted_labels = [class_names[i] for i in predicted_indices]
+
+# Display the Results 
+for i, (probs, label) in enumerate(zip(predictions, predicted_labels)):
+    print(f"\nSample {i+1}")
+    for j, prob in enumerate(probs):
+        print(f"   {class_names[j]:<12}: {prob:.4f}")
+    print(f"Predicted Class: {label}")
+
