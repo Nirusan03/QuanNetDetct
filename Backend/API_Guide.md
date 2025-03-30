@@ -25,19 +25,30 @@ This markdown file provides a complete guide to testing the QuanNetDetect backen
 ### URL : http://localhost:5000/upload-pcap
 Uploads a `.pcap` file and extracts flow-level features. You can simulate attacks using either predefined DDoS vectors or custom user-defined feature values.
 
-### **Body Type**: `form-data`
+### **Body Type (Customer values)**: `form-data`
 - `file`: (type = File) Your `.pcap` file
 - `metadata`: (type = Text)
 ```json
 {
-  "tls_version": "3",    // 1: TLSv1.2, 2: TLSv1.3, 3: Both
-  "mode": "auto",         // "auto" or "custom"
-  "record_limit": 10,     // Optional: Limit flows
+  "tls_version": "3",     // 1: TLSv1.2, 2: TLSv1.3, 3: Both
+  "mode": "custom",       // "auto" or "custom"
+  "record_limit": 100,     // Optional: Limit flows
   "custom_features": {    // Required if mode = custom
     "Flow Duration": 0.1,
     "Source Port": 443,
     "Total Length of Fwd Packets": 1200
   }
+}
+```
+
+### **Body Type (Automate value)**: `form-data`
+- `file`: (type = File) Your `.pcap` file
+- `metadata`: (type = Text)
+```json
+{
+  "tls_version": "1", // 1: TLSv1.2, 2: TLSv1.3, 3: Both
+  "mode": "auto",
+  "record_limit": 100
 }
 ```
 
@@ -151,7 +162,7 @@ Performs inference on the simulated features using the trained QNN model and ret
 ```
 
 ### **Stored in DB**:
-- MongoDB stores predictions with timestamp
+### **MongoDB** stores predictions with timestamp
 
 ---
 
@@ -224,7 +235,7 @@ Can be used to populate a dropdown/history page in the frontend.
 
 ---
 
-## 🧠 Tip:
+## Tip:
 Use the returned `file_id` from `/upload-pcap` to pass to all other endpoints as input.
 
 ---
