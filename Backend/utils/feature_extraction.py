@@ -76,8 +76,13 @@ def process_pcap_and_simulate(pcap_path, save_csv_path, tls_version="3", mode="a
         print(f"[+] Using user-defined custom feature values.")
     else:
         # Load pre-encoded DDoS attack vectors
-        base_dir = os.path.dirname(__file__)
-        onehot_path = os.path.abspath(os.path.join(base_dir, '../../outputs/TLS_OneHotEncoded.csv'))
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        outputs_dir = os.path.join(base_dir, '..', 'outputs')
+        onehot_path = os.path.join(outputs_dir, 'TLS_OneHotEncoded.csv')
+
+        if not os.path.exists(onehot_path):
+            raise FileNotFoundError(f"Missing file: {onehot_path}")
+
         onehot_df = pd.read_csv(onehot_path)
 
         # Select only attack samples

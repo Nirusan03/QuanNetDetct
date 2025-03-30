@@ -13,8 +13,11 @@ from utils.feature_extraction import process_pcap_and_simulate
 from utils.pcap_generation import generate_pcap_from_csv, validate_pcap
 from utils.qnn_inference import run_qnn_prediction
 
-UPLOAD_FOLDER = 'uploads'
-OUTPUT_FOLDER = 'outputs'
+# Always resolve full path from this script's location
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
+OUTPUT_FOLDER = os.path.join(BASE_DIR, 'outputs')
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
@@ -129,7 +132,7 @@ def list_reports():
 
 @app.route('/download-report/<file_id>', methods=['GET'])
 def download_report(file_id):
-    report_path = os.path.join(OUTPUT_FOLDER, f'{file_id}_report.csv')
+    report_path = os.path.normpath(os.path.join(OUTPUT_FOLDER, f'{file_id}_report.csv'))
     if os.path.exists(report_path):
         return send_file(report_path, as_attachment=True)
     return jsonify({'error': 'Report not found'}), 404
