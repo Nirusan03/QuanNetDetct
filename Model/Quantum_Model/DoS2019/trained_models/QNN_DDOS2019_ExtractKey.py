@@ -1,13 +1,13 @@
+import os
 import pyshark
 import pandas as pd
 import numpy as np
 from collections import defaultdict
 import random
 
-# === STEP 1: Load the PCAP file ===
+# === Step 1: Load the PCAP file ===
 pcap_path = "E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Quantum_Model\\DoS2019\\trained_models\\real_traffic_test.pcap"
 cap = pyshark.FileCapture(pcap_path, only_summaries=False)
-
 flows = defaultdict(list)
 
 def extract_flow_key(pkt):
@@ -27,16 +27,14 @@ for pkt in cap:
     if key:
         flows[key].append(pkt)
 
-# === STEP 2: Extract Real Flow Features ===
+# === Step 2: Extract Real Flow Features ===
 real_flow_data = []
-
 for key, packets in flows.items():
     try:
         pkt_count = len(packets)
         byte_count = sum(int(pkt.length) for pkt in packets if hasattr(pkt, 'length'))
         duration = float(packets[-1].sniff_timestamp) - float(packets[0].sniff_timestamp)
         duration = round(duration, 6)
-        avg_pkt_size = byte_count / pkt_count if pkt_count > 0 else 0
         src_ip, dst_ip, sport, dport, proto = key.split('-')
 
         real_flow_data.append({
@@ -48,31 +46,45 @@ for key, packets in flows.items():
         continue
 
 real_df = pd.DataFrame(real_flow_data)
+print(f"\nCaptured {len(real_df)} real flows from PCAP.")
 
-# === STEP 3: Load One-Hot Encoded Attack Data for Sampling ===
-onehot_file = "E:\\TLS_OneHotEncoded.csv"
-onehot_df = pd.read_csv(onehot_file)
+# === Step 3: Load Attack & OneHot Data ===
+full_attack_df = pd.read_csv("E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Quantum_Model\\DoS2019\\trained_models\\sample_all_attacks_test_data.csv")
+onehot_df = pd.read_csv("E:\\TLS_OneHotEncoded.csv")
 
-# Drop target and timestamp cols (if any)
-onehot_df = onehot_df.drop(columns=[col for col in onehot_df.columns if 'Label_' in col or 'Timestamp' in col], errors='ignore')
+# === Step 4: Separate DDoS and Benign Samples ===
+ddos_mask = (onehot_df['Label_0'] == 1.0) | (onehot_df['Label_1'] == 1.0) | (onehot_df['Label_2'] == 1.0)
+benign_mask = onehot_df['Label_4'] == 1.0
 
-# === STEP 4: Merge Real + Sampled Features ===
+ddos_samples = onehot_df[ddos_mask].drop(columns=['Label_0','Label_1','Label_2','Label_3','Label_4','Timestamp'], errors='ignore').reset_index(drop=True)
+benign_samples = onehot_df[benign_mask].drop(columns=['Label_0','Label_1','Label_2','Label_3','Label_4','Timestamp'], errors='ignore').reset_index(drop=True)
+
+# === Step 5: Simulate DDoS and Keep Some Benign ===
 final_rows = []
-for i in range(len(real_df)):
-    sample_row = onehot_df.sample(n=1, random_state=random.randint(0, 10000)).reset_index(drop=True)
-    sample_row = sample_row.copy()
+num_ddos = int(len(real_df) * 0.90)
+ddos_real = real_df.iloc[:num_ddos]
+benign_real = real_df.iloc[num_ddos:]
 
-    sample_row.loc[0, 'Flow Duration'] = real_df.iloc[i]['Flow Duration']
-    sample_row.loc[0, 'Source Port'] = real_df.iloc[i]['Source Port']
-    sample_row.loc[0, 'Total Length of Fwd Packets'] = real_df.iloc[i]['Total Length of Fwd Packets']
+# Map DDoS features
+for i in range(len(ddos_real)):
+    attack_row = ddos_samples.sample(n=1, random_state=random.randint(0, 10000)).copy().reset_index(drop=True)
+    attack_row.loc[0, 'Flow Duration'] = ddos_real.iloc[i]['Flow Duration']
+    attack_row.loc[0, 'Source Port'] = ddos_real.iloc[i]['Source Port']
+    attack_row.loc[0, 'Total Length of Fwd Packets'] = ddos_real.iloc[i]['Total Length of Fwd Packets']
+    final_rows.append(attack_row)
 
+# Map Benign features
+for i in range(len(benign_real)):
+    sample_row = benign_samples.sample(n=1, random_state=random.randint(0, 10000)).copy().reset_index(drop=True)
+    sample_row.loc[0, 'Flow Duration'] = benign_real.iloc[i]['Flow Duration']
+    sample_row.loc[0, 'Source Port'] = benign_real.iloc[i]['Source Port']
+    sample_row.loc[0, 'Total Length of Fwd Packets'] = benign_real.iloc[i]['Total Length of Fwd Packets']
     final_rows.append(sample_row)
 
+# === Step 6: Save Final CSV ===
 final_df = pd.concat(final_rows, ignore_index=True)
+save_path = "E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Quantum_Model\DoS2019\\trained_models\\QuanNetDetect_Simulated_DDoS_Plus_Benign.csv"
+final_df.to_csv(save_path, index=False)
 
-# === STEP 5: Save Model-Ready CSV ===
-output_path = "E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Quantum_Model\\DoS2019\\trained_models\\model_ready_real_traffic.csv"
-final_df.to_csv(output_path, index=False)
-
-print("Model-compatible file saved to:")
-print(f"     {output_path}")
+print(f"\nDDoS Simulation Completed with {num_ddos} attack flows and {len(benign_real)} benign.")
+print(f"Saved as: {save_path}")
