@@ -14,3 +14,16 @@ Two solutions I can go with:
 *) Go with initial port selection i have done.
 *) Classifying what kind of traffic it is in the darknet dataset - Tor, non-tor, vpn.
 *) Train the dataset with cic 2018 and for real world testing use cisnet dataset.
+
+=============================
+
+
+*) Validate the cluster based smote by checking the vast of the data points before applying smote.
+   - Plots are better (DNS, LDAP, SYN)
+
+*) Do the feature importance validation to each attack (for the feature selection) before moving on the feature selection on QNN model.
+   Do the feature importance plot to the smote dataset as well. 
+
+   Comparing them and validate
+
+*) Add the benchmarking validation in lr also explain in words at the testing chapter (7).
