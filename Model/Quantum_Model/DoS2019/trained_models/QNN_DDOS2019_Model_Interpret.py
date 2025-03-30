@@ -106,7 +106,7 @@ print("\nModel Output:")
 print(f"Name = {model.output.name}, Shape = {model.output.shape}, Dtype = {model.output.dtype}")
 
 # Load the test CSV
-test_df = pd.read_csv(r"e:\Studies\IIT\4 - Forth Year\Final Year Project\QuanNetDetct\Model\Quantum_Model\DoS2019\trained_models\sample_all_attacks_test_data.csv")
+test_df = pd.read_csv(r"e:\Studies\IIT\4 - Forth Year\Final Year Project\QuanNetDetct\Model\Quantum_Model\DoS2019\trained_models\Model_Input.csv")
 
 # Convert to NumPy
 X_test = test_df.values.astype(np.float32)

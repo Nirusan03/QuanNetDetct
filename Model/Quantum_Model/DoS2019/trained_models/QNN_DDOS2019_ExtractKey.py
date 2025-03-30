@@ -52,39 +52,24 @@ print(f"\nCaptured {len(real_df)} real flows from PCAP.")
 full_attack_df = pd.read_csv("E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Quantum_Model\\DoS2019\\trained_models\\sample_all_attacks_test_data.csv")
 onehot_df = pd.read_csv("E:\\TLS_OneHotEncoded.csv")
 
-# === Step 4: Separate DDoS and Benign Samples ===
+# === Step 4: Separate Only DDoS Samples ===
 ddos_mask = (onehot_df['Label_0'] == 1.0) | (onehot_df['Label_1'] == 1.0) | (onehot_df['Label_2'] == 1.0)
-benign_mask = onehot_df['Label_4'] == 1.0
-
 ddos_samples = onehot_df[ddos_mask].drop(columns=['Label_0','Label_1','Label_2','Label_3','Label_4','Timestamp'], errors='ignore').reset_index(drop=True)
-benign_samples = onehot_df[benign_mask].drop(columns=['Label_0','Label_1','Label_2','Label_3','Label_4','Timestamp'], errors='ignore').reset_index(drop=True)
 
-# === Step 5: Simulate DDoS and Keep Some Benign ===
+# === Step 5: Simulate All Real Flows as DDoS ===
 final_rows = []
-num_ddos = int(len(real_df) * 0.90)
-ddos_real = real_df.iloc[:num_ddos]
-benign_real = real_df.iloc[num_ddos:]
 
-# Map DDoS features
-for i in range(len(ddos_real)):
+for i in range(len(real_df)):
     attack_row = ddos_samples.sample(n=1, random_state=random.randint(0, 10000)).copy().reset_index(drop=True)
-    attack_row.loc[0, 'Flow Duration'] = ddos_real.iloc[i]['Flow Duration']
-    attack_row.loc[0, 'Source Port'] = ddos_real.iloc[i]['Source Port']
-    attack_row.loc[0, 'Total Length of Fwd Packets'] = ddos_real.iloc[i]['Total Length of Fwd Packets']
+    attack_row.loc[0, 'Flow Duration'] = real_df.iloc[i]['Flow Duration']
+    attack_row.loc[0, 'Source Port'] = real_df.iloc[i]['Source Port']
+    attack_row.loc[0, 'Total Length of Fwd Packets'] = real_df.iloc[i]['Total Length of Fwd Packets']
     final_rows.append(attack_row)
-
-# Map Benign features
-for i in range(len(benign_real)):
-    sample_row = benign_samples.sample(n=1, random_state=random.randint(0, 10000)).copy().reset_index(drop=True)
-    sample_row.loc[0, 'Flow Duration'] = benign_real.iloc[i]['Flow Duration']
-    sample_row.loc[0, 'Source Port'] = benign_real.iloc[i]['Source Port']
-    sample_row.loc[0, 'Total Length of Fwd Packets'] = benign_real.iloc[i]['Total Length of Fwd Packets']
-    final_rows.append(sample_row)
 
 # === Step 6: Save Final CSV ===
 final_df = pd.concat(final_rows, ignore_index=True)
-save_path = "E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Quantum_Model\DoS2019\\trained_models\\QuanNetDetect_Simulated_DDoS_Plus_Benign.csv"
+save_path = "E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Quantum_Model\\DoS2019\\trained_models\\Model_Input.csv"
 final_df.to_csv(save_path, index=False)
 
-print(f"\nDDoS Simulation Completed with {num_ddos} attack flows and {len(benign_real)} benign.")
+print(f"\nDDoS Simulation Completed: {len(final_df)} flows simulated as DDoS.")
 print(f"Saved as: {save_path}")
