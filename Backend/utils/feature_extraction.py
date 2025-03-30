@@ -1,5 +1,4 @@
-# utils/feature_extraction.py
-
+import asyncio
 import pyshark
 import pandas as pd
 import numpy as np
@@ -7,24 +6,27 @@ import random
 from collections import defaultdict
 import os
 
+# Choose the correct Wireshark display filter based on user input
 def get_tls_filter(version_choice):
     if version_choice == "1":
         return "tls.record.version == 0x0303"  # TLSv1.2
     elif version_choice == "2":
         return "tls.record.version == 0x0304"  # TLSv1.3
-    else:
-        return "(tls.record.version == 0x0303 or tls.record.version == 0x0304)"
+    return "(tls.record.version == 0x0303 or tls.record.version == 0x0304)"
 
+# Main function to extract flows and simulate attack traffic
 def process_pcap_and_simulate(pcap_path, save_csv_path, tls_version="3", mode="auto", custom_features=None, record_limit=None):
-    print(f"[+] Loading PCAP: {pcap_path} | Mode: {mode} | TLS: {tls_version}")
+    # Fix for PyShark: create an event loop inside thread
+    asyncio.set_event_loop(asyncio.new_event_loop())
 
-    # TLS Filter
+    print(f"[+] Loading PCAP: {pcap_path} | Mode: {mode} | TLS: {tls_version}")
     display_filter = get_tls_filter(tls_version)
 
-    # Capture TLS flows
+    # Read .pcap file and filter based on TLS version
     cap = pyshark.FileCapture(pcap_path, display_filter=display_filter, only_summaries=False)
     flows = defaultdict(list)
 
+    # Extract flow key (5-tuple): src-dst-sport-dport-protocol
     def extract_flow_key(pkt):
         try:
             ip_layer = pkt.ip
@@ -39,6 +41,7 @@ def process_pcap_and_simulate(pcap_path, save_csv_path, tls_version="3", mode="a
         except:
             return None
 
+    # Group packets into flows
     for pkt in cap:
         key = extract_flow_key(pkt)
         if key:
@@ -46,7 +49,7 @@ def process_pcap_and_simulate(pcap_path, save_csv_path, tls_version="3", mode="a
 
     print(f"[+] Extracted {len(flows)} TLS flows from PCAP.")
 
-    # Extract flow stats
+    # Extract features: duration, source port, total forward length
     real_flow_data = []
     for key, packets in flows.items():
         try:
@@ -61,25 +64,30 @@ def process_pcap_and_simulate(pcap_path, save_csv_path, tls_version="3", mode="a
         except:
             continue
 
-    # Limit records
+    # Optionally limit the number of flows to simulate
     if record_limit and record_limit < len(real_flow_data):
         real_flow_data = real_flow_data[:record_limit]
 
     real_df = pd.DataFrame(real_flow_data)
 
+    # Use user-defined features if mode is 'custom'
     if mode == "custom":
-        # Repeat same user-defined values
         final_df = pd.DataFrame([custom_features] * len(real_df))
         print(f"[+] Using user-defined custom feature values.")
     else:
-        # Automated mode — load DDoS attack samples
+        # Load pre-encoded DDoS attack vectors
         base_dir = os.path.dirname(__file__)
         onehot_path = os.path.abspath(os.path.join(base_dir, '../../outputs/TLS_OneHotEncoded.csv'))
         onehot_df = pd.read_csv(onehot_path)
 
+        # Select only attack samples
         ddos_mask = (onehot_df['Label_0'] == 1.0) | (onehot_df['Label_1'] == 1.0) | (onehot_df['Label_2'] == 1.0)
-        ddos_samples = onehot_df[ddos_mask].drop(columns=['Label_0', 'Label_1', 'Label_2', 'Label_3', 'Label_4', 'Timestamp'], errors='ignore').reset_index(drop=True)
+        ddos_samples = onehot_df[ddos_mask].drop(
+            columns=['Label_0', 'Label_1', 'Label_2', 'Label_3', 'Label_4', 'Timestamp'],
+            errors='ignore'
+        ).reset_index(drop=True)
 
+        # For each flow, embed attack sample and keep flow-based fields
         final_rows = []
         for i in range(len(real_df)):
             attack_row = ddos_samples.sample(n=1, random_state=random.randint(0, 10000)).copy().reset_index(drop=True)
@@ -91,5 +99,6 @@ def process_pcap_and_simulate(pcap_path, save_csv_path, tls_version="3", mode="a
         final_df = pd.concat(final_rows, ignore_index=True)
         print(f"[+] Simulated {len(final_df)} DDoS flows using automated features.")
 
+    # Save the final simulated dataset
     final_df.to_csv(save_csv_path, index=False)
     print(f"[+] Saved simulation output to {save_csv_path}")
