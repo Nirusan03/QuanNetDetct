@@ -125,4 +125,3 @@ for i, (probs, label) in enumerate(zip(predictions, predicted_labels)):
     for j, prob in enumerate(probs):
         print(f"   {class_names[j]:<12}: {prob:.4f}")
     print(f"Predicted Class: {label}")
-
