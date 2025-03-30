@@ -4,7 +4,7 @@ import random
 from datetime import datetime, timedelta
 
 # Load the model input CSV 
-csv_path = "E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Quantum_Model\\DoS2019\\trained_models\\Model_Input.csv"
+csv_path = "E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Quantum_Model\\DoS2019\\trained_models\\Model_Input_1.csv"
 df = pd.read_csv(csv_path)
 
 # Prepare packet list

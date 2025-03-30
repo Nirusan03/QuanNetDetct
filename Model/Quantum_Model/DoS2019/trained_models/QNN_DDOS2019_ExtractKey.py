@@ -5,19 +5,29 @@ import numpy as np
 from collections import defaultdict
 import random
 
-# === Step 1: Load the PCAP file ===
+# Step 1: Load Only TLS Packets from PCAP 
 pcap_path = "E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Quantum_Model\\DoS2019\\trained_models\\real_traffic_test.pcap"
-cap = pyshark.FileCapture(pcap_path, only_summaries=False)
+
+# Only TLS packets (TLSv1.2 and TLSv1.3)
+cap = pyshark.FileCapture(
+    pcap_path,
+    # Filter only TLS traffic
+    display_filter="tls",  
+    only_summaries=False
+)
+
 flows = defaultdict(list)
 
 def extract_flow_key(pkt):
     try:
         ip_layer = pkt.ip
         proto = pkt.transport_layer
+        if proto is None or proto.upper() != "TCP":
+            return None
         src = ip_layer.src
         dst = ip_layer.dst
-        sport = pkt[pkt.transport_layer].srcport if proto else None
-        dport = pkt[pkt.transport_layer].dstport if proto else None
+        sport = pkt[pkt.transport_layer].srcport
+        dport = pkt[pkt.transport_layer].dstport
         return f"{src}-{dst}-{sport}-{dport}-{proto}"
     except:
         return None
@@ -27,7 +37,7 @@ for pkt in cap:
     if key:
         flows[key].append(pkt)
 
-# === Step 2: Extract Real Flow Features ===
+# Step 2: Extract Real Flow Features
 real_flow_data = []
 for key, packets in flows.items():
     try:
@@ -46,17 +56,17 @@ for key, packets in flows.items():
         continue
 
 real_df = pd.DataFrame(real_flow_data)
-print(f"\nCaptured {len(real_df)} real flows from PCAP.")
+print(f"\nCaptured {len(real_df)} TLS flows from PCAP.")
 
-# === Step 3: Load Attack & OneHot Data ===
+# Step 3: Load Attack & OneHot Data 
 full_attack_df = pd.read_csv("E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Quantum_Model\\DoS2019\\trained_models\\sample_all_attacks_test_data.csv")
 onehot_df = pd.read_csv("E:\\TLS_OneHotEncoded.csv")
 
-# === Step 4: Separate Only DDoS Samples ===
+# Step 4: Separate Only DDoS Samples 
 ddos_mask = (onehot_df['Label_0'] == 1.0) | (onehot_df['Label_1'] == 1.0) | (onehot_df['Label_2'] == 1.0)
 ddos_samples = onehot_df[ddos_mask].drop(columns=['Label_0','Label_1','Label_2','Label_3','Label_4','Timestamp'], errors='ignore').reset_index(drop=True)
 
-# === Step 5: Simulate All Real Flows as DDoS ===
+# Step 5: Simulate All Real Flows as DDoS 
 final_rows = []
 
 for i in range(len(real_df)):
@@ -66,10 +76,10 @@ for i in range(len(real_df)):
     attack_row.loc[0, 'Total Length of Fwd Packets'] = real_df.iloc[i]['Total Length of Fwd Packets']
     final_rows.append(attack_row)
 
-# === Step 6: Save Final CSV ===
+# Step 6: Save Final CSV
 final_df = pd.concat(final_rows, ignore_index=True)
-save_path = "E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Quantum_Model\\DoS2019\\trained_models\\Model_Input.csv"
+save_path = "E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Quantum_Model\\DoS2019\\trained_models\\Model_Input_1.csv"
 final_df.to_csv(save_path, index=False)
 
-print(f"\nDDoS Simulation Completed: {len(final_df)} flows simulated as DDoS.")
+print(f"\nDDoS Simulation Completed: {len(final_df)} TLS-based flows simulated as DDoS.")
 print(f"Saved as: {save_path}")
