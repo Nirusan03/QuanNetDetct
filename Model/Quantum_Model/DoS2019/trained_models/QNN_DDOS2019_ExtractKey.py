@@ -32,9 +32,9 @@ print("3 - Both TLSv1.2 and TLSv1.3")
 tls_choice = input("Enter your choice (1/2/3): ").strip()
 
 if tls_choice == "1":
-    tls_filter = "tls.record.version == 0x0303"
+    tls_filter = "tls.record.version == 0x0303" # TLSv1.2
 elif tls_choice == "2":
-    tls_filter = "tls.record.version == 0x0304"
+    tls_filter = "tls.record.version == 0x0304" # TLSv1.3
 elif tls_choice == "3":
     tls_filter = "(tls.record.version == 0x0303 or tls.record.version == 0x0304)"
 else:
