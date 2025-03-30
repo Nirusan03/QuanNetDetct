@@ -1,6 +1,0 @@
-Inbound,Source Port,URG Flag Count,RST Flag Count,Packet Length Std,Bwd Packet Length Std,Bwd Packet Length Max,Fwd Packet Length Std,Packet Length Variance,Avg Bwd Segment Size,Bwd Packet Length Mean,Max Packet Length,Bwd IAT Total,Bwd IAT Max,Flow Duration,Flow IAT Max,Fwd IAT Total,Idle Mean,Idle Min,Fwd IAT Max,Idle Max,Bwd IAT Std,Bwd IAT Mean,Fwd IAT Std,Flow IAT Std,Bwd Packets/s,Total Length of Fwd Packets,Subflow Fwd Bytes,Init_Win_bytes_backward,Subflow Fwd Packets
-1.0,564.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1472.0,0.0,0.0,46.0,46.0,46.0,0.0,0.0,46.0,0.0,0.0,0.0,0.0,0.0,0.0,2944.0,2944.0,-1.0,2.0
-1.0,564.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1472.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,2944.0,2944.0,-1.0,2.0
-1.0,564.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1472.0,0.0,0.0,47.0,47.0,47.0,0.0,0.0,47.0,0.0,0.0,0.0,0.0,0.0,0.0,2944.0,2944.0,-1.0,2.0
-1.0,864.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1472.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,2944.0,2944.0,-1.0,2.0
-1.0,564.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1472.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,2944.0,2944.0,-1.0,2.0
