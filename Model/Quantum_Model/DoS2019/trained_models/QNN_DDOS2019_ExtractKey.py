@@ -5,17 +5,26 @@ import numpy as np
 from collections import defaultdict
 import random
 
-# Step 1: Load Only TLS Packets from PCAP 
+# Step 0: Ask User for TLS Version to Filter
+print("Select TLS version(s) to extract from PCAP:")
+print("1 - TLSv1.2")
+print("2 - TLSv1.3")
+print("3 - Both TLSv1.2 and TLSv1.3")
+user_choice = input("Enter your choice (1/2/3): ").strip()
+
+if user_choice == "1":
+    tls_filter = "tls.record.version == 0x0303"  # TLSv1.2
+elif user_choice == "2":
+    tls_filter = "tls.record.version == 0x0304"  # TLSv1.3
+elif user_choice == "3":
+    tls_filter = "(tls.record.version == 0x0303 or tls.record.version == 0x0304)"
+else:
+    print("Invalid input. Defaulting to both TLSv1.2 and TLSv1.3.")
+    tls_filter = "(tls.record.version == 0x0303 or tls.record.version == 0x0304)"
+
+# Step 1: Load the PCAP file with Filter
 pcap_path = "E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Quantum_Model\\DoS2019\\trained_models\\real_traffic_test.pcap"
-
-# Only TLS packets (TLSv1.2 and TLSv1.3)
-cap = pyshark.FileCapture(
-    pcap_path,
-    # Filter only TLS traffic
-    display_filter="tls",  
-    only_summaries=False
-)
-
+cap = pyshark.FileCapture(pcap_path, display_filter=tls_filter, only_summaries=False)
 flows = defaultdict(list)
 
 def extract_flow_key(pkt):
@@ -81,5 +90,5 @@ final_df = pd.concat(final_rows, ignore_index=True)
 save_path = "E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Quantum_Model\\DoS2019\\trained_models\\Model_Input_1.csv"
 final_df.to_csv(save_path, index=False)
 
-print(f"\nDDoS Simulation Completed: {len(final_df)} TLS-based flows simulated as DDoS.")
+print(f"\nDDoS Simulation Completed: {len(final_df)} flows simulated using TLS version(s) selected.")
 print(f"Saved as: {save_path}")
