@@ -9,7 +9,7 @@ def summarize_pcap_for_visualization(pcap_path):
     Parses .pcap file and returns structure for frontend visualisation:
     - Protocol usage
     - Port usage
-    - Top 100 packets with fields
+    - All available flow summaries
     """
     asyncio.set_event_loop(asyncio.new_event_loop())
     try:
@@ -38,14 +38,17 @@ def summarize_pcap_for_visualization(pcap_path):
                 src_ports[sport] += 1
                 dst_ports[dport] += 1
 
+        cap.close()  # Close pyshark handle explicitly
+
         summary = {
             "total_packets": len(flows),
             "protocol_distribution": dict(protocol_counts),
             "source_port_distribution": dict(src_ports),
             "destination_port_distribution": dict(dst_ports),
-            "flows": flows[:100]
+            "flows": flows  # <== No slicing here
         }
 
         return summary
+
     except Exception as e:
         return {"error": f"Failed to process pcap: {str(e)}"}
