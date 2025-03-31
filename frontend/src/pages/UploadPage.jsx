@@ -6,7 +6,7 @@ import axios from 'axios';
 
 const UploadPage = () => {
   const [file, setFile] = useState(null);
-  const [tlsVersion, setTlsVersion] = useState('1');
+  const [tlsVersion, setTlsVersion] = useState('1'); // Default: TLS 1.2
   const [mode, setMode] = useState('auto');
   const [customFeatures, setCustomFeatures] = useState('');
   const [recordLimit, setRecordLimit] = useState(10);
@@ -14,6 +14,11 @@ const UploadPage = () => {
   const [message, setMessage] = useState('');
 
   const handleUpload = async () => {
+    if (!file) {
+      setMessage('Please select a .pcap file first.');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
 
@@ -21,15 +26,16 @@ const UploadPage = () => {
       tls_version: tlsVersion,
       mode,
       record_limit: Number(recordLimit),
-      custom_features: mode === 'custom' ? customFeatures : undefined,
+      ...(mode === 'custom' && { custom_features: customFeatures })
     };
 
-    formData.append('json', JSON.stringify(payload));
+    // Key must be "metadata" as backend expects
+    formData.append('metadata', JSON.stringify(payload));
 
     try {
       const response = await axios.post('http://localhost:5000/upload-pcap', formData);
       setFileId(response.data.file_id);
-      setMessage(response.data.message);
+      setMessage(response.data.message || 'Upload successful!');
     } catch (error) {
       console.error(error);
       setMessage('Upload failed.');
@@ -45,9 +51,9 @@ const UploadPage = () => {
       <FormControl fullWidth margin="normal">
         <InputLabel>TLS Version</InputLabel>
         <Select value={tlsVersion} onChange={(e) => setTlsVersion(e.target.value)} label="TLS Version">
-          <MenuItem value="1">TLS 1.0</MenuItem>
-          <MenuItem value="2">TLS 1.2</MenuItem>
-          <MenuItem value="3">TLS 1.3</MenuItem>
+          <MenuItem value="1">TLS 1.2</MenuItem>
+          <MenuItem value="2">TLS 1.3</MenuItem>
+          <MenuItem value="3">All TLS Versions (1.2 + 1.3)</MenuItem>
         </Select>
       </FormControl>
 
