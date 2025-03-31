@@ -1,5 +1,5 @@
 # utils/visualization_utils.py
-
+import asyncio
 import os
 import pyshark
 from collections import defaultdict
@@ -11,6 +11,7 @@ def summarize_pcap_for_visualization(pcap_path):
     - Port usage
     - Top 100 packets with fields
     """
+    asyncio.set_event_loop(asyncio.new_event_loop())
     try:
         cap = pyshark.FileCapture(pcap_path, only_summaries=True)
         flows = []
@@ -42,7 +43,7 @@ def summarize_pcap_for_visualization(pcap_path):
             "protocol_distribution": dict(protocol_counts),
             "source_port_distribution": dict(src_ports),
             "destination_port_distribution": dict(dst_ports),
-            "flows": flows[:100]  # for table on frontend
+            "flows": flows[:100]
         }
 
         return summary
