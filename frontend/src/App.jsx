@@ -23,15 +23,13 @@ const App = () => {
       <Router>
         <div style={{ display: 'flex' }}>
           <Sidebar />
-          <div style={{ flexGrow: 1, padding: '1rem' }}>
-            {/* Optional top toolbar (for spacing + light/dark toggle) */}
+          <div style={{ flexGrow: 1, paddingTop: '1rem', paddingBottom: '1rem' }}>
             <Toolbar style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <IconButton onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}>
                 {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
               </IconButton>
             </Toolbar>
 
-            {/* Routes */}
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/upload" element={<UploadPage />} />

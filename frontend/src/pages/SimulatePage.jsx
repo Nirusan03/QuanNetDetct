@@ -8,7 +8,8 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  TextField
+  TextField,
+  Box
 } from '@mui/material';
 import axios from 'axios';
 import PageWrapper from '../components/PageWrapper';
@@ -51,114 +52,131 @@ const SimulatePage = () => {
 
   return (
     <PageWrapper>
-      <Paper elevation={3} style={{ padding: '2rem' }}>
-        <Typography variant="h5" gutterBottom>Simulate & Predict</Typography>
-
-        <TextField
-          label="Enter File ID"
-          fullWidth
-          margin="normal"
-          value={fileId}
-          onChange={(e) => setFileId(e.target.value)}
-        />
-
-        <Button variant="contained" color="primary" onClick={handleSimulate} style={{ marginRight: 10 }}>
-          Generate Simulated PCAP
-        </Button>
-
-        <Button variant="contained" color="secondary" onClick={handleValidate} style={{ marginRight: 10 }}>
-          Preview Packets
-        </Button>
-
-        <Button variant="contained" color="success" onClick={handlePredict}>
-          Predict
-        </Button>
-
-        {simulationMessage && (
-          <Typography style={{ color: 'green', marginTop: '1rem' }}>
-            {simulationMessage}
+      <Box sx={{ maxWidth: '1900px', mx: 'auto' }}>
+        <Paper elevation={3} sx={{ padding: '2.5rem', backgroundColor: '#1e1e1e' }}>
+          <Typography variant="h5" gutterBottom sx={{ color: '#90caf9' }}>
+            Simulate & Predict
           </Typography>
-        )}
 
-        {/* Packet Table */}
-        {packets.length > 0 && (
-          <>
-            <Typography variant="h6" style={{ marginTop: '2rem' }}>Packet Preview</Typography>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>#</TableCell>
-                  <TableCell>Src IP</TableCell>
-                  <TableCell>Dst IP</TableCell>
-                  <TableCell>Src Port</TableCell>
-                  <TableCell>Dst Port</TableCell>
-                  <TableCell>Size</TableCell>
-                  <TableCell>Flags</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {packets.map((pkt, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell>{pkt.index}</TableCell>
-                    <TableCell>{pkt.src_ip}</TableCell>
-                    <TableCell>{pkt.dst_ip}</TableCell>
-                    <TableCell>{pkt.sport}</TableCell>
-                    <TableCell>{pkt.dport}</TableCell>
-                    <TableCell>{pkt.size}</TableCell>
-                    <TableCell>{pkt.flags}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </>
-        )}
+          <TextField
+            label="Enter File ID"
+            fullWidth
+            margin="normal"
+            value={fileId}
+            onChange={(e) => setFileId(e.target.value)}
+            sx={{ input: { color: '#e0e0e0' } }}
+          />
 
-        {/* Prediction Table */}
-        {predictions.length > 0 && (
-          <>
-            <Typography variant="h6" style={{ marginTop: '2rem' }}>Prediction Results</Typography>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>#</TableCell>
-                  <TableCell>Predicted Class</TableCell>
-                  <TableCell>BENIGN</TableCell>
-                  <TableCell>DrDoS_DNS</TableCell>
-                  <TableCell>DrDoS_LDAP</TableCell>
-                  <TableCell>LDAP</TableCell>
-                  <TableCell>Syn</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {predictions.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell>{p.id}</TableCell>
-                    <TableCell>{p.predicted_class}</TableCell>
-                    <TableCell>{(p.BENIGN * 100).toFixed(2)}%</TableCell>
-                    <TableCell>{(p.DrDoS_DNS * 100).toFixed(2)}%</TableCell>
-                    <TableCell>{(p.DrDoS_LDAP * 100).toFixed(2)}%</TableCell>
-                    <TableCell>{(p.LDAP * 100).toFixed(2)}%</TableCell>
-                    <TableCell>{(p.Syn * 100).toFixed(2)}%</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+            <Button variant="contained" onClick={handleSimulate} sx={{ backgroundColor: '#42a5f5' }}>
+              Generate Simulated PCAP
+            </Button>
+            <Button variant="contained" onClick={handleValidate} sx={{ backgroundColor: '#ba68c8' }}>
+              Preview Packets
+            </Button>
+            <Button variant="contained" onClick={handlePredict} sx={{ backgroundColor: '#66bb6a' }}>
+              Predict
+            </Button>
+          </Box>
 
-            {reportPath && (
-              <Button
-                variant="outlined"
-                color="info"
-                href={`http://localhost:5000/download-report/${fileId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ marginTop: '1rem' }}
-              >
-                Download Report
-              </Button>
-            )}
-          </>
-        )}
-      </Paper>
+          {simulationMessage && (
+            <Typography sx={{ mt: 3, color: '#81c784' }}>{simulationMessage}</Typography>
+          )}
+
+          {packets.length > 0 && (
+            <>
+              <Typography variant="h6" sx={{ mt: 5, mb: 1, color: '#64b5f6' }}>
+                Packet Preview
+              </Typography>
+
+              <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'auto', backgroundColor: '#1e1e1e' }}>
+                <Table sx={{ minWidth: 1000 }} size="medium">
+                  <TableHead>
+                    <TableRow sx={{ backgroundColor: '#263238' }}>
+                      {['#', 'Src IP', 'Dst IP', 'Src Port', 'Dst Port', 'Size', 'Flags'].map((head, idx) => (
+                        <TableCell key={idx} sx={{ color: '#ffffff', fontWeight: 600, py: 1.5 }}>{head}</TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {packets.map((pkt, idx) => (
+                      <TableRow
+                        key={idx}
+                        hover
+                        sx={{
+                          backgroundColor: idx % 2 === 0 ? '#2c2c2c' : '#252525',
+                          '&:hover': { backgroundColor: '#37474f' }
+                        }}
+                      >
+                        <TableCell>{pkt.index}</TableCell>
+                        <TableCell>{pkt.src_ip}</TableCell>
+                        <TableCell>{pkt.dst_ip}</TableCell>
+                        <TableCell>{pkt.sport}</TableCell>
+                        <TableCell>{pkt.dport}</TableCell>
+                        <TableCell>{pkt.size}</TableCell>
+                        <TableCell>{pkt.flags}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Paper>
+            </>
+          )}
+
+          {predictions.length > 0 && (
+            <>
+              <Typography variant="h6" sx={{ mt: 5, mb: 1, color: '#64b5f6' }}>
+                Prediction Results
+              </Typography>
+
+              <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'auto', backgroundColor: '#1e1e1e' }}>
+                <Table sx={{ minWidth: 1200 }} size="medium">
+                  <TableHead>
+                    <TableRow sx={{ backgroundColor: '#263238' }}>
+                      {['#', 'Predicted Class', 'BENIGN', 'DrDoS_DNS', 'DrDoS_LDAP', 'LDAP', 'Syn'].map((head, idx) => (
+                        <TableCell key={idx} sx={{ color: '#ffffff', fontWeight: 600, py: 1.5 }}>{head}</TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {predictions.map((p) => (
+                      <TableRow
+                        key={p.id}
+                        hover
+                        sx={{
+                          backgroundColor: p.id % 2 === 0 ? '#2c2c2c' : '#252525',
+                          '&:hover': { backgroundColor: '#37474f' }
+                        }}
+                      >
+                        <TableCell>{p.id}</TableCell>
+                        <TableCell>{p.predicted_class}</TableCell>
+                        <TableCell>{(p.BENIGN * 100).toFixed(2)}%</TableCell>
+                        <TableCell>{(p.DrDoS_DNS * 100).toFixed(2)}%</TableCell>
+                        <TableCell>{(p.DrDoS_LDAP * 100).toFixed(2)}%</TableCell>
+                        <TableCell>{(p.LDAP * 100).toFixed(2)}%</TableCell>
+                        <TableCell>{(p.Syn * 100).toFixed(2)}%</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Paper>
+
+              {reportPath && (
+                <Button
+                  variant="outlined"
+                  color="info"
+                  href={`http://localhost:5000/download-report/${fileId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ mt: 3 }}
+                >
+                  Download Report
+                </Button>
+              )}
+            </>
+          )}
+        </Paper>
+      </Box>
     </PageWrapper>
   );
 };
