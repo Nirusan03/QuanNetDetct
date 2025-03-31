@@ -1,5 +1,5 @@
 import React from 'react';
-import { Drawer, List, ListItem, ListItemIcon, ListItemText, Toolbar } from '@mui/material';
+import { Drawer, List, ListItem, ListItemIcon, ListItemText, Toolbar, Typography, Box } from '@mui/material';
 import { Home as HomeIcon, CloudUpload, Assessment, BarChart, Timeline } from '@mui/icons-material';
 import { NavLink } from 'react-router-dom';
 
@@ -30,6 +30,11 @@ const Sidebar = () => {
         },
       }}
     >
+      <Box sx={{ padding: '1rem' }}>
+        <Typography variant="h6" sx={{ color: '#90caf9', fontWeight: 'bold', textAlign: 'center' }}>
+          Quan Net Detect
+        </Typography>
+      </Box>
       <Toolbar />
       <List>
         {navItems.map(({ text, icon, path }) => (

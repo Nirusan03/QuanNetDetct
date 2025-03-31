@@ -4,7 +4,6 @@ import { Box, Typography, Link } from '@mui/material';
 const Footer = () => {
   return (
     <Box sx={{
-      backgroundColor: '#1e1e1e',
       color: '#e0e0e0',
       padding: '1rem',
       textAlign: 'center',
