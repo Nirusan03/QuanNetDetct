@@ -10,6 +10,7 @@ import {
   Button,
 } from '@mui/material';
 import axios from 'axios';
+import PageWrapper from '../components/PageWrapper';
 
 const ReportsPage = () => {
   const [reports, setReports] = useState([]);
@@ -38,76 +39,78 @@ const ReportsPage = () => {
   };
 
   return (
-    <Paper elevation={3} style={{ padding: '2rem' }}>
-      <Typography variant="h5" gutterBottom>Past Prediction Reports</Typography>
+    <PageWrapper>
+      <Paper elevation={3} style={{ padding: '2rem' }}>
+        <Typography variant="h5" gutterBottom>Past Prediction Reports</Typography>
 
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>File ID</TableCell>
-            <TableCell>Created At</TableCell>
-            <TableCell>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {reports.map((r, idx) => (
-            <TableRow key={idx}>
-              <TableCell>{r.file_id}</TableCell>
-              <TableCell>{r.created_at}</TableCell>
-              <TableCell>
-                <Button onClick={() => handleViewReport(r.file_id)} size="small" variant="outlined">
-                  View
-                </Button>
-                <Button
-                  href={`http://localhost:5000/download-report/${r.file_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  size="small"
-                  style={{ marginLeft: 10 }}
-                >
-                  Download
-                </Button>
-              </TableCell>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>File ID</TableCell>
+              <TableCell>Created At</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-
-      {selectedReport && (
-        <>
-          <Typography variant="h6" style={{ marginTop: '2rem' }}>
-            Report for File ID: {selectedReport.file_id}
-          </Typography>
-
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>#</TableCell>
-                <TableCell>Predicted Class</TableCell>
-                <TableCell>BENIGN</TableCell>
-                <TableCell>DrDoS_DNS</TableCell>
-                <TableCell>DrDoS_LDAP</TableCell>
-                <TableCell>LDAP</TableCell>
-                <TableCell>Syn</TableCell>
+          </TableHead>
+          <TableBody>
+            {reports.map((r, idx) => (
+              <TableRow key={idx}>
+                <TableCell>{r.file_id}</TableCell>
+                <TableCell>{r.created_at}</TableCell>
+                <TableCell>
+                  <Button onClick={() => handleViewReport(r.file_id)} size="small" variant="outlined">
+                    View
+                  </Button>
+                  <Button
+                    href={`http://localhost:5000/download-report/${r.file_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    size="small"
+                    style={{ marginLeft: 10 }}
+                  >
+                    Download
+                  </Button>
+                </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {selectedReport.predictions.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell>{p.id}</TableCell>
-                  <TableCell>{p.predicted_class}</TableCell>
-                  <TableCell>{(p.BENIGN * 100).toFixed(2)}%</TableCell>
-                  <TableCell>{(p.DrDoS_DNS * 100).toFixed(2)}%</TableCell>
-                  <TableCell>{(p.DrDoS_LDAP * 100).toFixed(2)}%</TableCell>
-                  <TableCell>{(p.LDAP * 100).toFixed(2)}%</TableCell>
-                  <TableCell>{(p.Syn * 100).toFixed(2)}%</TableCell>
+            ))}
+          </TableBody>
+        </Table>
+
+        {selectedReport && (
+          <>
+            <Typography variant="h6" style={{ marginTop: '2rem' }}>
+              Report for File ID: {selectedReport.file_id}
+            </Typography>
+
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>#</TableCell>
+                  <TableCell>Predicted Class</TableCell>
+                  <TableCell>BENIGN</TableCell>
+                  <TableCell>DrDoS_DNS</TableCell>
+                  <TableCell>DrDoS_LDAP</TableCell>
+                  <TableCell>LDAP</TableCell>
+                  <TableCell>Syn</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </>
-      )}
-    </Paper>
+              </TableHead>
+              <TableBody>
+                {selectedReport.predictions.map((p) => (
+                  <TableRow key={p.id}>
+                    <TableCell>{p.id}</TableCell>
+                    <TableCell>{p.predicted_class}</TableCell>
+                    <TableCell>{(p.BENIGN * 100).toFixed(2)}%</TableCell>
+                    <TableCell>{(p.DrDoS_DNS * 100).toFixed(2)}%</TableCell>
+                    <TableCell>{(p.DrDoS_LDAP * 100).toFixed(2)}%</TableCell>
+                    <TableCell>{(p.LDAP * 100).toFixed(2)}%</TableCell>
+                    <TableCell>{(p.Syn * 100).toFixed(2)}%</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </>
+        )}
+      </Paper>
+    </PageWrapper>
   );
 };
 

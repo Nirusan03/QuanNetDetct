@@ -3,6 +3,7 @@ import {
   Paper, TextField, MenuItem, Button, Typography, FormControl, InputLabel, Select,
 } from '@mui/material';
 import axios from 'axios';
+import PageWrapper from '../components/PageWrapper';
 
 const UploadPage = () => {
   const [file, setFile] = useState(null);
@@ -43,61 +44,63 @@ const UploadPage = () => {
   };
 
   return (
-    <Paper elevation={3} style={{ padding: '2rem' }}>
-      <Typography variant="h5" gutterBottom>Upload PCAP File</Typography>
+    <PageWrapper>
+      <Paper elevation={3} style={{ padding: '2rem' }}>
+        <Typography variant="h5" gutterBottom>Upload PCAP File</Typography>
 
-      <input type="file" accept=".pcap" onChange={(e) => setFile(e.target.files[0])} />
+        <input type="file" accept=".pcap" onChange={(e) => setFile(e.target.files[0])} />
 
-      <FormControl fullWidth margin="normal">
-        <InputLabel>TLS Version</InputLabel>
-        <Select value={tlsVersion} onChange={(e) => setTlsVersion(e.target.value)} label="TLS Version">
-          <MenuItem value="1">TLS 1.2</MenuItem>
-          <MenuItem value="2">TLS 1.3</MenuItem>
-          <MenuItem value="3">All TLS Versions (1.2 + 1.3)</MenuItem>
-        </Select>
-      </FormControl>
+        <FormControl fullWidth margin="normal">
+          <InputLabel>TLS Version</InputLabel>
+          <Select value={tlsVersion} onChange={(e) => setTlsVersion(e.target.value)} label="TLS Version">
+            <MenuItem value="1">TLS 1.2</MenuItem>
+            <MenuItem value="2">TLS 1.3</MenuItem>
+            <MenuItem value="3">All TLS Versions (1.2 + 1.3)</MenuItem>
+          </Select>
+        </FormControl>
 
-      <FormControl fullWidth margin="normal">
-        <InputLabel>Mode</InputLabel>
-        <Select value={mode} onChange={(e) => setMode(e.target.value)} label="Mode">
-          <MenuItem value="auto">Auto</MenuItem>
-          <MenuItem value="custom">Custom</MenuItem>
-        </Select>
-      </FormControl>
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Mode</InputLabel>
+          <Select value={mode} onChange={(e) => setMode(e.target.value)} label="Mode">
+            <MenuItem value="auto">Auto</MenuItem>
+            <MenuItem value="custom">Custom</MenuItem>
+          </Select>
+        </FormControl>
 
-      {mode === 'custom' && (
+        {mode === 'custom' && (
+          <TextField
+            label="Custom Features"
+            fullWidth
+            margin="normal"
+            value={customFeatures}
+            onChange={(e) => setCustomFeatures(e.target.value)}
+          />
+        )}
+
         <TextField
-          label="Custom Features"
+          label="Record Limit"
+          type="number"
           fullWidth
           margin="normal"
-          value={customFeatures}
-          onChange={(e) => setCustomFeatures(e.target.value)}
+          value={recordLimit}
+          onChange={(e) => setRecordLimit(e.target.value)}
         />
-      )}
 
-      <TextField
-        label="Record Limit"
-        type="number"
-        fullWidth
-        margin="normal"
-        value={recordLimit}
-        onChange={(e) => setRecordLimit(e.target.value)}
-      />
+        <Button variant="contained" color="primary" onClick={handleUpload} style={{ marginTop: '1rem' }}>
+          Upload & Simulate
+        </Button>
 
-      <Button variant="contained" color="primary" onClick={handleUpload} style={{ marginTop: '1rem' }}>
-        Upload & Simulate
-      </Button>
+        {fileId && (
+          <Typography style={{ marginTop: '1rem' }}>
+            ✅ File ID: <strong>{fileId}</strong>
+          </Typography>
+        )}
 
-      {fileId && (
-        <Typography style={{ marginTop: '1rem' }}>
-          ✅ File ID: <strong>{fileId}</strong>
-        </Typography>
-      )}
-
-      {message && (
-        <Typography style={{ marginTop: '0.5rem' }}>{message}</Typography>
-      )}
-    </Paper>
+        {message && (
+          <Typography style={{ marginTop: '0.5rem' }}>{message}</Typography>
+        )}
+      </Paper>
+    </PageWrapper>
   );
 };
 
