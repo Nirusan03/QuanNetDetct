@@ -15,6 +15,7 @@ import {
 import axios from 'axios';
 import { Pie, Bar } from 'react-chartjs-2';
 import PageWrapper from '../components/PageWrapper';
+import Footer from '../components/Footer';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -155,6 +156,7 @@ const VisualizeUploaded = () => {
           )}
         </Paper>
       </Box>
+      <Footer />
     </PageWrapper>
   );
 };

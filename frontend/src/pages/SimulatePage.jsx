@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 import PageWrapper from '../components/PageWrapper';
-
+import Footer from '../components/Footer';
 const SimulatePage = () => {
   const [fileId, setFileId] = useState('');
   const [packets, setPackets] = useState([]);
@@ -177,6 +177,7 @@ const SimulatePage = () => {
           )}
         </Paper>
       </Box>
+      <Footer />
     </PageWrapper>
   );
 };

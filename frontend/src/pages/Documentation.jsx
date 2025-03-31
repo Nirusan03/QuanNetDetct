@@ -1,6 +1,7 @@
 import React from 'react';
 import { Typography, Paper, Box, Divider } from '@mui/material';
 import PageWrapper from '../components/PageWrapper';
+import Footer from '../components/Footer';
 
 const Highlight = ({ children }) => (
   <span style={{ fontWeight: 600, color: '#1976d2' }}>{children}</span>
@@ -144,6 +145,7 @@ const DocumentationPage = () => {
           <strong>Tip:</strong> Always keep the <code>File ID</code> returned from the upload step. It’s required for all other operations including simulation, prediction, and report download.
         </Typography>
       </Box>
+      <Footer />
     </PageWrapper>
   );
 };

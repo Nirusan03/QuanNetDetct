@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 import PageWrapper from '../components/PageWrapper';
+import Footer from '../components/Footer';
 
 const ReportsPage = () => {
   const [reports, setReports] = useState([]);
@@ -147,6 +148,7 @@ const ReportsPage = () => {
           )}
         </Paper>
       </Box>
+      <Footer />
     </PageWrapper>
   );
 };

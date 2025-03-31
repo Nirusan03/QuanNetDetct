@@ -4,6 +4,8 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 import PageWrapper from '../components/PageWrapper';
+import Footer from '../components/Footer';
+
 
 const UploadPage = () => {
   const [file, setFile] = useState(null);
@@ -119,7 +121,7 @@ const UploadPage = () => {
 
           {fileId && (
             <Typography sx={{ mt: 3, color: '#66bb6a' }}>
-              ✅ File ID: <strong>{fileId}</strong>
+              File ID: <strong>{fileId}</strong>
             </Typography>
           )}
 
@@ -128,6 +130,7 @@ const UploadPage = () => {
           )}
         </Paper>
       </Box>
+      <Footer />
     </PageWrapper>
   );
 };
