@@ -1,0 +1,255 @@
+{
+	"info": {
+		"_postman_id": "4a613d70-4b2d-4079-908b-f4476103d2e1",
+		"name": "QuanNetDetect_DDos2019",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "41734941",
+		"_collection_link": "https://employee-sync.postman.co/workspace/Employee-Sync-Workspace~c8674949-f15e-42ba-8403-a8541c68f179/collection/41734941-4a613d70-4b2d-4079-908b-f4476103d2e1?action=share&source=collection_link&creator=41734941"
+	},
+	"item": [
+		{
+			"name": "1 - Upload Pcap",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/E:/Studies/IIT/4 - Forth Year/Final Year Project/QuanNetDetct/Model/Quantum_Model/DoS2019/trained_models/real_traffic_test.pcap"
+						},
+						{
+							"key": "metadata",
+							"value": "{\n  \"tls_version\": \"1\",\n  \"mode\": \"auto\",\n  \"record_limit\": 10\n}\n",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:5000/upload-pcap",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"upload-pcap"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2 - Generate Pcap",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"file_id\": \"195e332758af400b97e9e8e50cfe8160\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/generate-pcap",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"generate-pcap"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3 - Validate Pcap",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"file_id\": \"195e332758af400b97e9e8e50cfe8160\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/validate-pcap",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"validate-pcap"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4 - Predict Results",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"file_id\": \"195e332758af400b97e9e8e50cfe8160\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/predict",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"predict"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5 - Download Report",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/download-report/195e332758af400b97e9e8e50cfe8160",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"download-report",
+						"195e332758af400b97e9e8e50cfe8160"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6 - Get Report",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/get-report/195e332758af400b97e9e8e50cfe8160",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"get-report",
+						"195e332758af400b97e9e8e50cfe8160"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "7 - List All Report IDS",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/list-reports",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"list-reports"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "8 - Visualize Raw PCAP",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/visualize-upload/195e332758af400b97e9e8e50cfe8160",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"visualize-upload",
+						"195e332758af400b97e9e8e50cfe8160"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "9 - Visualize Simulated PCAP",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/visualize-simulated/195e332758af400b97e9e8e50cfe8160",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"visualize-simulated",
+						"195e332758af400b97e9e8e50cfe8160"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
