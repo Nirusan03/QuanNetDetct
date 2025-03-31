@@ -50,9 +50,9 @@ const ReportsPage = () => {
           <Table size="small">
             <TableHead>
               <TableRow sx={{ backgroundColor: '#263238' }}>
-                <TableCell sx={{ color: '#ffffff', fontWeight: 600 }}>File ID</TableCell>
-                <TableCell sx={{ color: '#ffffff', fontWeight: 600 }}>Created At</TableCell>
-                <TableCell sx={{ color: '#ffffff', fontWeight: 600 }}>Actions</TableCell>
+                <TableCell sx={{ color: '#ffffff', fontWeight: 600, py: 1.5 }}>File ID</TableCell>
+                <TableCell sx={{ color: '#ffffff', fontWeight: 600, py: 1.5 }}>Created At</TableCell>
+                <TableCell sx={{ color: '#ffffff', fontWeight: 600, py: 1.5 }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -63,16 +63,22 @@ const ReportsPage = () => {
                   sx={{
                     backgroundColor: idx % 2 === 0 ? '#2c2c2c' : '#252525',
                     '&:hover': { backgroundColor: '#37474f' },
+                    '& td': { py: 2 }, // Increased row height
                   }}
                 >
-                  <TableCell>{r.file_id}</TableCell>
-                  <TableCell>{r.created_at}</TableCell>
+                  <TableCell sx={{ color: '#ffffff' }}>{r.file_id}</TableCell>
+                  <TableCell sx={{ color: '#ffffff' }}>{r.created_at}</TableCell>
                   <TableCell>
                     <Button
                       onClick={() => handleViewReport(r.file_id)}
                       size="small"
                       variant="outlined"
-                      sx={{ borderColor: '#42a5f5', color: '#42a5f5', fontWeight: 600 }}
+                      sx={{
+                        borderColor: '#42a5f5',
+                        color: '#42a5f5',
+                        fontWeight: 600,
+                        '&:hover': { backgroundColor: '#1e88e5', color: '#fff' },
+                      }}
                     >
                       View
                     </Button>
@@ -108,7 +114,7 @@ const ReportsPage = () => {
                   <TableHead>
                     <TableRow sx={{ backgroundColor: '#263238' }}>
                       {['#', 'Predicted Class', 'BENIGN', 'DrDoS_DNS', 'DrDoS_LDAP', 'LDAP', 'Syn'].map((header, idx) => (
-                        <TableCell key={idx} sx={{ color: '#ffffff', fontWeight: 600 }}>
+                        <TableCell key={idx} sx={{ color: '#ffffff', fontWeight: 600, py: 1.5 }}>
                           {header}
                         </TableCell>
                       ))}
@@ -122,15 +128,16 @@ const ReportsPage = () => {
                         sx={{
                           backgroundColor: idx % 2 === 0 ? '#2c2c2c' : '#252525',
                           '&:hover': { backgroundColor: '#37474f' },
+                          '& td': { py: 2 }, // Increased row height for flow rows
                         }}
                       >
-                        <TableCell>{p.id}</TableCell>
-                        <TableCell>{p.predicted_class}</TableCell>
-                        <TableCell>{(p.BENIGN * 100).toFixed(2)}%</TableCell>
-                        <TableCell>{(p.DrDoS_DNS * 100).toFixed(2)}%</TableCell>
-                        <TableCell>{(p.DrDoS_LDAP * 100).toFixed(2)}%</TableCell>
-                        <TableCell>{(p.LDAP * 100).toFixed(2)}%</TableCell>
-                        <TableCell>{(p.Syn * 100).toFixed(2)}%</TableCell>
+                        <TableCell sx={{ color: '#ffffff' }}>{p.id}</TableCell>
+                        <TableCell sx={{ color: '#ffffff' }}>{p.predicted_class}</TableCell>
+                        <TableCell sx={{ color: '#ffffff' }}>{(p.BENIGN * 100).toFixed(2)}%</TableCell>
+                        <TableCell sx={{ color: '#ffffff' }}>{(p.DrDoS_DNS * 100).toFixed(2)}%</TableCell>
+                        <TableCell sx={{ color: '#ffffff' }}>{(p.DrDoS_LDAP * 100).toFixed(2)}%</TableCell>
+                        <TableCell sx={{ color: '#ffffff' }}>{(p.LDAP * 100).toFixed(2)}%</TableCell>
+                        <TableCell sx={{ color: '#ffffff' }}>{(p.Syn * 100).toFixed(2)}%</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
