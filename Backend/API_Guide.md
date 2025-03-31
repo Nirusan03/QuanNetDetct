@@ -228,7 +228,7 @@ Can be used to populate a dropdown/history page in the frontend.
 | `/upload-pcap`        | `.csv`      | Simulated features                            |
 | `/generate-pcap`      | `.pcap`     | Synthetic PCAP                                |
 | `/validate-pcap`      | `JSON`      | Preview of packets                            |
-| `/predict`            | `JSON + .csv`| Model results and report                      |
+| `/predict`            | `JSON + .csv`| Model results and report                     |
 | `/download-report`    | `.csv`      | Downloadable report                           |
 | `/get-report`         | `JSON`      | Full result with probabilities                |
 | `/list-reports`       | `JSON`      | Scan history summary                          |
