@@ -8,6 +8,7 @@ import {
   TableRow,
   TableCell,
   Button,
+  Box
 } from '@mui/material';
 import axios from 'axios';
 import PageWrapper from '../components/PageWrapper';
@@ -40,76 +41,105 @@ const ReportsPage = () => {
 
   return (
     <PageWrapper>
-      <Paper elevation={3} style={{ padding: '2rem' }}>
-        <Typography variant="h5" gutterBottom>Past Prediction Reports</Typography>
+      <Box sx={{ maxWidth: '1900px', mx: 'auto' }}>
+        <Paper elevation={3} sx={{ padding: '2.5rem', backgroundColor: '#1e1e1e' }}>
+          <Typography variant="h5" gutterBottom sx={{ color: '#90caf9' }}>
+            Past Prediction Reports
+          </Typography>
 
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>File ID</TableCell>
-              <TableCell>Created At</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {reports.map((r, idx) => (
-              <TableRow key={idx}>
-                <TableCell>{r.file_id}</TableCell>
-                <TableCell>{r.created_at}</TableCell>
-                <TableCell>
-                  <Button onClick={() => handleViewReport(r.file_id)} size="small" variant="outlined">
-                    View
-                  </Button>
-                  <Button
-                    href={`http://localhost:5000/download-report/${r.file_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    size="small"
-                    style={{ marginLeft: 10 }}
-                  >
-                    Download
-                  </Button>
-                </TableCell>
+          <Table size="small">
+            <TableHead>
+              <TableRow sx={{ backgroundColor: '#263238' }}>
+                <TableCell sx={{ color: '#ffffff', fontWeight: 600 }}>File ID</TableCell>
+                <TableCell sx={{ color: '#ffffff', fontWeight: 600 }}>Created At</TableCell>
+                <TableCell sx={{ color: '#ffffff', fontWeight: 600 }}>Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-
-        {selectedReport && (
-          <>
-            <Typography variant="h6" style={{ marginTop: '2rem' }}>
-              Report for File ID: {selectedReport.file_id}
-            </Typography>
-
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>#</TableCell>
-                  <TableCell>Predicted Class</TableCell>
-                  <TableCell>BENIGN</TableCell>
-                  <TableCell>DrDoS_DNS</TableCell>
-                  <TableCell>DrDoS_LDAP</TableCell>
-                  <TableCell>LDAP</TableCell>
-                  <TableCell>Syn</TableCell>
+            </TableHead>
+            <TableBody>
+              {reports.map((r, idx) => (
+                <TableRow
+                  key={idx}
+                  hover
+                  sx={{
+                    backgroundColor: idx % 2 === 0 ? '#2c2c2c' : '#252525',
+                    '&:hover': { backgroundColor: '#37474f' },
+                  }}
+                >
+                  <TableCell>{r.file_id}</TableCell>
+                  <TableCell>{r.created_at}</TableCell>
+                  <TableCell>
+                    <Button
+                      onClick={() => handleViewReport(r.file_id)}
+                      size="small"
+                      variant="outlined"
+                      sx={{ borderColor: '#42a5f5', color: '#42a5f5', fontWeight: 600 }}
+                    >
+                      View
+                    </Button>
+                    <Button
+                      href={`http://localhost:5000/download-report/${r.file_id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      size="small"
+                      sx={{
+                        ml: 2,
+                        color: '#ffffff',
+                        fontWeight: 600,
+                        backgroundColor: '#1e88e5',
+                        '&:hover': { backgroundColor: '#1565c0' },
+                      }}
+                    >
+                      Download
+                    </Button>
+                  </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {selectedReport.predictions.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell>{p.id}</TableCell>
-                    <TableCell>{p.predicted_class}</TableCell>
-                    <TableCell>{(p.BENIGN * 100).toFixed(2)}%</TableCell>
-                    <TableCell>{(p.DrDoS_DNS * 100).toFixed(2)}%</TableCell>
-                    <TableCell>{(p.DrDoS_LDAP * 100).toFixed(2)}%</TableCell>
-                    <TableCell>{(p.LDAP * 100).toFixed(2)}%</TableCell>
-                    <TableCell>{(p.Syn * 100).toFixed(2)}%</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </>
-        )}
-      </Paper>
+              ))}
+            </TableBody>
+          </Table>
+
+          {selectedReport && (
+            <>
+              <Typography variant="h6" sx={{ mt: 5, mb: 2, color: '#64b5f6' }}>
+                Report for File ID: {selectedReport.file_id}
+              </Typography>
+
+              <Paper elevation={1} sx={{ borderRadius: 2, overflow: 'auto', backgroundColor: '#1e1e1e' }}>
+                <Table size="medium">
+                  <TableHead>
+                    <TableRow sx={{ backgroundColor: '#263238' }}>
+                      {['#', 'Predicted Class', 'BENIGN', 'DrDoS_DNS', 'DrDoS_LDAP', 'LDAP', 'Syn'].map((header, idx) => (
+                        <TableCell key={idx} sx={{ color: '#ffffff', fontWeight: 600 }}>
+                          {header}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {selectedReport.predictions.map((p, idx) => (
+                      <TableRow
+                        key={p.id}
+                        hover
+                        sx={{
+                          backgroundColor: idx % 2 === 0 ? '#2c2c2c' : '#252525',
+                          '&:hover': { backgroundColor: '#37474f' },
+                        }}
+                      >
+                        <TableCell>{p.id}</TableCell>
+                        <TableCell>{p.predicted_class}</TableCell>
+                        <TableCell>{(p.BENIGN * 100).toFixed(2)}%</TableCell>
+                        <TableCell>{(p.DrDoS_DNS * 100).toFixed(2)}%</TableCell>
+                        <TableCell>{(p.DrDoS_LDAP * 100).toFixed(2)}%</TableCell>
+                        <TableCell>{(p.LDAP * 100).toFixed(2)}%</TableCell>
+                        <TableCell>{(p.Syn * 100).toFixed(2)}%</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Paper>
+            </>
+          )}
+        </Paper>
+      </Box>
     </PageWrapper>
   );
 };
