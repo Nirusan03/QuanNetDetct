@@ -1,13 +1,13 @@
 import React from 'react';
 import { Drawer, List, ListItem, ListItemIcon, ListItemText, Toolbar } from '@mui/material';
-import { Home, CloudUpload, Assessment, BarChart, Timeline } from '@mui/icons-material';
+import { Home as HomeIcon, CloudUpload, Assessment, BarChart, Timeline } from '@mui/icons-material';
 import { NavLink } from 'react-router-dom';
 
 const drawerWidth = 240;
 
 const Sidebar = () => {
   const navItems = [
-    { text: 'Home', icon: <Home />, path: '/' },
+    { text: 'Documentation', icon: <HomeIcon />, path: '/' },
     { text: 'Upload PCAP', icon: <CloudUpload />, path: '/upload' },
     { text: 'Simulate & Predict', icon: <Assessment />, path: '/simulate' },
     { text: 'Visualize Uploaded', icon: <Timeline />, path: '/visualize/upload/PLACEHOLDER' },
@@ -22,24 +22,28 @@ const Sidebar = () => {
       sx={{
         width: drawerWidth,
         flexShrink: 0,
-        [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
+        '& .MuiDrawer-paper': {
+          width: drawerWidth,
+          boxSizing: 'border-box',
+          backgroundColor: '#121212',
+          color: '#fff',
+        },
       }}
     >
       <Toolbar />
       <List>
         {navItems.map(({ text, icon, path }) => (
           <ListItem
-            button
             key={text}
             component={NavLink}
             to={path}
-            sx={{
-              '&.active': {
-                backgroundColor: 'action.selected',
-              },
-            }}
+            style={({ isActive }) => ({
+              backgroundColor: isActive ? '#1e1e1e' : 'inherit',
+              color: isActive ? '#2196f3' : 'inherit',
+              textDecoration: 'none',
+            })}
           >
-            <ListItemIcon>{icon}</ListItemIcon>
+            <ListItemIcon sx={{ color: 'inherit' }}>{icon}</ListItemIcon>
             <ListItemText primary={text} />
           </ListItem>
         ))}

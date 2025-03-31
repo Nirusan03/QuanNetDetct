@@ -6,7 +6,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { getTheme } from './theme/theme';
 import Sidebar from './components/Sidebar';
 
-import Home from './pages/Home';
+import Home from './pages/Documentation';
 import UploadPage from './pages/UploadPage';
 import SimulatePage from './pages/SimulatePage';
 import VisualizeUploaded from './pages/VisualizeUploaded';
