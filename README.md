@@ -22,14 +22,11 @@ This project implements a **Hybrid Quantum-Classical Neural Network (QNN)** for 
 ### 1. Clone the Repository
 ```bash
 git clone https://github.com/Nirusan03/QuanNetDetct.git
-cd quannetdetect
 ```
 
 ### 2. Backend Setup (Flask API)
 ```bash
 cd backend
-python -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
 pip install -r requirements.txt
 python app.py
 ```
