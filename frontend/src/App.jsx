@@ -1,35 +1,50 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState, useMemo } from 'react';
+import { ThemeProvider, CssBaseline, IconButton, Toolbar } from '@mui/material';
+import { Brightness4, Brightness7 } from '@mui/icons-material';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-function App() {
-  const [count, setCount] = useState(0)
+import { getTheme } from './theme/theme';
+import Sidebar from './components/Sidebar';
+
+import Home from './pages/Home';
+import UploadPage from './pages/UploadPage';
+import SimulatePage from './pages/SimulatePage';
+import VisualizeUploaded from './pages/VisualizeUploaded';
+import VisualizeSimulated from './pages/VisualizeSimulated';
+import ReportsPage from './pages/ReportsPage';
+
+const App = () => {
+  const [mode, setMode] = useState('dark');
+  const theme = useMemo(() => getTheme(mode), [mode]);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Router>
+        <div style={{ display: 'flex' }}>
+          <Sidebar />
+          <div style={{ flexGrow: 1, padding: '1rem' }}>
+            {/* Optional top toolbar (for spacing + light/dark toggle) */}
+            <Toolbar style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <IconButton onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}>
+                {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
+              </IconButton>
+            </Toolbar>
 
-export default App
+            {/* Routes */}
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/upload" element={<UploadPage />} />
+              <Route path="/simulate" element={<SimulatePage />} />
+              <Route path="/visualize/upload/:fileId" element={<VisualizeUploaded />} />
+              <Route path="/visualize/simulated/:fileId" element={<VisualizeSimulated />} />
+              <Route path="/reports" element={<ReportsPage />} />
+            </Routes>
+          </div>
+        </div>
+      </Router>
+    </ThemeProvider>
+  );
+};
+
+export default App;
