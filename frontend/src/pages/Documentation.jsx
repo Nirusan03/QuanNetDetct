@@ -22,7 +22,7 @@ const ApiBox = ({ title, children }) => (
 const DocumentationPage = () => {
   return (
     <PageWrapper>
-      <Box sx={{ maxWidth: '1000px', mx: 'auto', padding: '2rem' }}>
+      <Box sx={{ maxWidth: '1800px', mx: 'auto', padding: '2rem' }}>
         <Typography variant="h4" gutterBottom>
           QuanNetDetect: <span style={{ color: '#64b5f6' }}>User Guide & API Flow</span>
         </Typography>

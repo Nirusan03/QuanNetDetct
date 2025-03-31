@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import {
-  Paper, TextField, MenuItem, Button, Typography, FormControl, InputLabel, Select,
+  Paper, TextField, MenuItem, Button, Typography, FormControl, InputLabel, Select, Box
 } from '@mui/material';
 import axios from 'axios';
 import PageWrapper from '../components/PageWrapper';
 
 const UploadPage = () => {
   const [file, setFile] = useState(null);
-  const [tlsVersion, setTlsVersion] = useState('1'); // Default: TLS 1.2
+  const [tlsVersion, setTlsVersion] = useState('1');
   const [mode, setMode] = useState('auto');
   const [customFeatures, setCustomFeatures] = useState('');
   const [recordLimit, setRecordLimit] = useState(10);
@@ -30,7 +30,6 @@ const UploadPage = () => {
       ...(mode === 'custom' && { custom_features: customFeatures })
     };
 
-    // Key must be "metadata" as backend expects
     formData.append('metadata', JSON.stringify(payload));
 
     try {
@@ -45,61 +44,90 @@ const UploadPage = () => {
 
   return (
     <PageWrapper>
-      <Paper elevation={3} style={{ padding: '2rem' }}>
-        <Typography variant="h5" gutterBottom>Upload PCAP File</Typography>
+      <Box sx={{ maxWidth: '1700px', mx: 'auto' }}>
+        <Paper elevation={3} sx={{ padding: '2.5rem', backgroundColor: '#1e1e1e' }}>
+          <Typography variant="h5" gutterBottom sx={{ color: '#90caf9' }}>
+            Upload PCAP File
+          </Typography>
 
-        <input type="file" accept=".pcap" onChange={(e) => setFile(e.target.files[0])} />
+          <input
+            type="file"
+            accept=".pcap"
+            onChange={(e) => setFile(e.target.files[0])}
+            style={{ marginTop: '1rem', marginBottom: '1.5rem', color: '#e0e0e0' }}
+          />
 
-        <FormControl fullWidth margin="normal">
-          <InputLabel>TLS Version</InputLabel>
-          <Select value={tlsVersion} onChange={(e) => setTlsVersion(e.target.value)} label="TLS Version">
-            <MenuItem value="1">TLS 1.2</MenuItem>
-            <MenuItem value="2">TLS 1.3</MenuItem>
-            <MenuItem value="3">All TLS Versions (1.2 + 1.3)</MenuItem>
-          </Select>
-        </FormControl>
+          <FormControl fullWidth margin="normal">
+            <InputLabel sx={{ color: '#ccc' }}>TLS Version</InputLabel>
+            <Select
+              value={tlsVersion}
+              onChange={(e) => setTlsVersion(e.target.value)}
+              label="TLS Version"
+              sx={{ color: '#e0e0e0' }}
+            >
+              <MenuItem value="1">TLS 1.2</MenuItem>
+              <MenuItem value="2">TLS 1.3</MenuItem>
+              <MenuItem value="3">All TLS Versions (1.2 + 1.3)</MenuItem>
+            </Select>
+          </FormControl>
 
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Mode</InputLabel>
-          <Select value={mode} onChange={(e) => setMode(e.target.value)} label="Mode">
-            <MenuItem value="auto">Auto</MenuItem>
-            <MenuItem value="custom">Custom</MenuItem>
-          </Select>
-        </FormControl>
+          <FormControl fullWidth margin="normal">
+            <InputLabel sx={{ color: '#ccc' }}>Mode</InputLabel>
+            <Select
+              value={mode}
+              onChange={(e) => setMode(e.target.value)}
+              label="Mode"
+              sx={{ color: '#e0e0e0' }}
+            >
+              <MenuItem value="auto">Auto</MenuItem>
+              <MenuItem value="custom">Custom</MenuItem>
+            </Select>
+          </FormControl>
 
-        {mode === 'custom' && (
+          {mode === 'custom' && (
+            <TextField
+              label="Custom Features (JSON)"
+              placeholder='{"Source Port": 443, "Flow Duration": 0.2}'
+              fullWidth
+              margin="normal"
+              multiline
+              minRows={3}
+              value={customFeatures}
+              onChange={(e) => setCustomFeatures(e.target.value)}
+              sx={{ input: { color: '#e0e0e0' } }}
+            />
+          )}
+
           <TextField
-            label="Custom Features"
+            label="Record Limit"
+            type="number"
             fullWidth
             margin="normal"
-            value={customFeatures}
-            onChange={(e) => setCustomFeatures(e.target.value)}
+            value={recordLimit}
+            onChange={(e) => setRecordLimit(e.target.value)}
+            sx={{ input: { color: '#e0e0e0' } }}
           />
-        )}
 
-        <TextField
-          label="Record Limit"
-          type="number"
-          fullWidth
-          margin="normal"
-          value={recordLimit}
-          onChange={(e) => setRecordLimit(e.target.value)}
-        />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleUpload}
+            sx={{ mt: 3 }}
+          >
+            Upload & Simulate
+          </Button>
 
-        <Button variant="contained" color="primary" onClick={handleUpload} style={{ marginTop: '1rem' }}>
-          Upload & Simulate
-        </Button>
+          {fileId && (
+            <Typography sx={{ mt: 3, color: '#66bb6a' }}>
+              ✅ File ID: <strong>{fileId}</strong>
+            </Typography>
+          )}
 
-        {fileId && (
-          <Typography style={{ marginTop: '1rem' }}>
-            ✅ File ID: <strong>{fileId}</strong>
-          </Typography>
-        )}
-
-        {message && (
-          <Typography style={{ marginTop: '0.5rem' }}>{message}</Typography>
-        )}
-      </Paper>
+          {message && (
+            <Typography sx={{ mt: 1.5, color: '#ccc' }}>{message}</Typography>
+          )}
+        </Paper>
+      </Box>
     </PageWrapper>
   );
 };
