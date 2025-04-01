@@ -25,7 +25,7 @@ def generate_pcap_from_csv(csv_path, output_pcap_path):
             dst_ip = f"10.0.{random.randint(0, 255)}.{random.randint(1, 254)}"
 
             sport = int(row.get("Source Port", random.randint(1024, 65535)))
-            dport = 443  # Common TLS port
+            dport = 443  # Most related up-layer tls port - HTTPS
 
             duration = float(row.get("Flow Duration", 0.01))
             total_len = int(row.get("Total Length of Fwd Packets", 100))
