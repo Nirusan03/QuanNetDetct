@@ -83,6 +83,7 @@ model = tf.keras.models.load_model(
     compile=False
 )
 
+# Attack Labels
 class_names = ['DrDoS_DNS', 'DrDoS_LDAP', 'Syn', 'LDAP', 'BENIGN']
 
 def run_qnn_prediction(csv_path):
