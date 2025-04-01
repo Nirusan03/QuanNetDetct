@@ -129,7 +129,7 @@ const ReportsPage = () => {
                         sx={{
                           backgroundColor: idx % 2 === 0 ? '#2c2c2c' : '#252525',
                           '&:hover': { backgroundColor: '#37474f' },
-                          '& td': { py: 2 }, // Increased row height for flow rows
+                          '& td': { py: 2 },
                         }}
                       >
                         <TableCell sx={{ color: '#ffffff' }}>{p.id}</TableCell>
