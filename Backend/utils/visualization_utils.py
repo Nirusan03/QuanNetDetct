@@ -45,7 +45,7 @@ def summarize_pcap_for_visualization(pcap_path):
             "protocol_distribution": dict(protocol_counts),
             "source_port_distribution": dict(src_ports),
             "destination_port_distribution": dict(dst_ports),
-            "flows": flows  # <== No slicing here
+            "flows": flows
         }
 
         return summary
