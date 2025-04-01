@@ -12,7 +12,7 @@ def get_tls_filter(version_choice):
         return "tls.record.version == 0x0303"  # TLSv1.2
     elif version_choice == "2":
         return "tls.record.version == 0x0304"  # TLSv1.3
-    return "(tls.record.version == 0x0303 or tls.record.version == 0x0304)"
+    return "(tls.record.version == 0x0303 or tls.record.version == 0x0304)" # Both TLS version
 
 # Main function to extract flows and simulate attack traffic
 def process_pcap_and_simulate(pcap_path, save_csv_path, tls_version="3", mode="auto", custom_features=None, record_limit=None):
