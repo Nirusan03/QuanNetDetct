@@ -13,7 +13,7 @@ from tensorflow.keras.utils import to_categorical
 np.random.seed(42)
 
 # Load the TLS network traffic dataset
-dataset_path = "E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Datasets\\Darknet.csv"
+dataset_path = "E:\\Studies\\IIT\\4 - Forth Year\\Final Year Project\\QuanNetDetct\\Model\\Datasets\\Darknet\\Darknet.csv"
 darknet_data = pd.read_csv(dataset_path)
 
 # Filter only TLS traffic
