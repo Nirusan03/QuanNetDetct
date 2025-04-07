@@ -27,3 +27,12 @@ Two solutions I can go with:
    Comparing them and validate
 
 *) Add the benchmarking validation in lr also explain in words at the testing chapter (7).
+
+====================================
+Prof. Anuradha's feedback
+
+*) Go deep into QNN apporaches and validate the efficiency.
+*) Explain about utilizatoin about qubits (validate it please).
+*) Need for quantum computing should be validated.
+*) Do a run time estimation with QNN model (can go with quantum cloud validations / real world implementation).
+*) Consider of NISQ apporach also - Explain the noise of quantum system - do a rough estimation.
