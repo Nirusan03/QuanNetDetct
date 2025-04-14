@@ -12,7 +12,7 @@ from utils.pcap_generation import generate_pcap_from_csv, validate_pcap
 from utils.qnn_inference import run_qnn_prediction
 from utils.visualization_utils import summarize_pcap_for_visualization
 
-# Always resolve full path from this script's location
+# Base path of the directory - QuanNetDetect
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
