@@ -1,0 +1,52 @@
+*) Create TLS network - last plan
+*) Introduce anomalies
+   0) Filter the non-anomaly and anomaly network traffic.
+   ii) Select the tls based features with a specific dataset, and non anomaly or anomaly.
+   iii) Plot and see the dataset points of anomaly datapoints.
+   iv) Introduce the anomaly datapoint to the new tls traffic dataset.
+
+Two solutions I can go with:
+1. Mail to isala about the findings about darknet and Cesnet dataset (say this ds does not cointains anomaly).
+2. Ask how to scope down project.
+
+================
+
+*) Go with initial port selection i have done.
+*) Classifying what kind of traffic it is in the darknet dataset - Tor, non-tor, vpn.
+*) Train the dataset with cic 2018 and for real world testing use cisnet dataset.
+
+=============================
+Mr. Cauci's Feedback
+
+*) Validate the cluster based smote by checking the vast of the data points before applying smote.
+   - Plots are better (DNS, LDAP, SYN)
+
+*) Do the feature importance validation to each attack (for the feature selection) before moving on the feature selection on QNN model.
+   Do the feature importance plot to the smote dataset as well. 
+
+   Comparing them and validate
+
+*) Add the benchmarking validation in lr also explain in words at the testing chapter (7).
+
+====================================
+Prof. Anuradha's feedback
+
+*) Go deep into QNN apporaches and validate the efficiency.
+*) Explain about utilizatoin about qubits (validate it please).
+*) Need for quantum computing should be validated.
+*) Do a run time estimation with QNN model (can go with quantum cloud validations / real world implementation).
+*) Consider of NISQ apporach also - Explain the noise of quantum system - do a rough estimation.
+
+====================================
+Mr. Gigara's Feedback
+*) Mention as DDos layer 7
+*) Dont mention as POC could break all kind of algorithm.
+*) Make it a live capturing network packets.
+*) Compare it with enterprise level applications (there can be more advance version of detection system).
+*) Dont say as the enterprise wifi packets were captured.
+*) Alter the network traffic 
+
+====================================
+Mr. Isala's Feedback
+
+*)
