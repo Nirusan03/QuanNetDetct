@@ -10,7 +10,9 @@ import {
   TableRow,
   TableCell,
   Grid,
-  Box
+  Box,
+  Alert,
+  CircularProgress,
 } from '@mui/material';
 import axios from 'axios';
 import { Pie, Bar } from 'react-chartjs-2';
@@ -23,7 +25,7 @@ import {
   Legend,
   CategoryScale,
   LinearScale,
-  BarElement
+  BarElement,
 } from 'chart.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
@@ -31,13 +33,42 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 const VisualizeUploaded = () => {
   const [fileId, setFileId] = useState('');
   const [data, setData] = useState(null);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const isValidFileId = (id) => /^[a-zA-Z0-9_-]{6,100}$/.test(id);
+
+  const validateInput = () => {
+    if (!fileId.trim()) {
+      setError('File ID is required.');
+      return false;
+    }
+    if (!isValidFileId(fileId.trim())) {
+      setError('Invalid File ID format.');
+      return false;
+    }
+    setError('');
+    return true;
+  };
 
   const fetchData = async () => {
+    if (!validateInput()) return;
+
     try {
-      const res = await axios.get(`http://localhost:5000/visualize-upload/${fileId}`);
+      setLoading(true);
+      setError('');
+      setData(null);
+      const res = await axios.get(`http://localhost:5000/visualize-upload/${fileId.trim()}`);
+      if (!res.data || !res.data.flows || !res.data.protocol_distribution) {
+        setError('Unexpected response format.');
+        return;
+      }
       setData(res.data);
     } catch (err) {
       console.error(err);
+      setError('Failed to fetch uploaded traffic data.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -76,13 +107,27 @@ const VisualizeUploaded = () => {
             fullWidth
             margin="normal"
             value={fileId}
+            error={!!error}
+            helperText={error}
             onChange={(e) => setFileId(e.target.value)}
-            sx={{ input: { color: '#e0e0e0' } }}
+            onBlur={validateInput}
+            sx={{ input: { color: '#e0e0e0' }, label: { color: '#e0e0e0' } }}
           />
 
-          <Button variant="contained" sx={{ mt: 2, backgroundColor: '#42a5f5' }} onClick={fetchData}>
+          <Button
+            variant="contained"
+            sx={{ mt: 2, backgroundColor: '#42a5f5' }}
+            onClick={fetchData}
+            disabled={!fileId.trim() || loading}
+          >
             Visualize
           </Button>
+
+          {loading && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <CircularProgress color="info" />
+            </Box>
+          )}
 
           {data && (
             <>
