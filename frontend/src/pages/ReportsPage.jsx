@@ -8,7 +8,9 @@ import {
   TableRow,
   TableCell,
   Button,
-  Box
+  Box,
+  Alert,
+  CircularProgress
 } from '@mui/material';
 import axios from 'axios';
 import PageWrapper from '../components/PageWrapper';
@@ -17,13 +19,20 @@ import Footer from '../components/Footer';
 const ReportsPage = () => {
   const [reports, setReports] = useState([]);
   const [selectedReport, setSelectedReport] = useState(null);
+  const [error, setError] = useState('');
+  const [loadingReport, setLoadingReport] = useState(false);
 
   useEffect(() => {
     const fetchReports = async () => {
       try {
         const res = await axios.get('http://localhost:5000/list-reports');
-        setReports(res.data);
+        if (Array.isArray(res.data)) {
+          setReports(res.data);
+        } else {
+          setError('Unexpected response format.');
+        }
       } catch (err) {
+        setError('Failed to fetch reports.');
         console.error(err);
       }
     };
@@ -32,11 +41,21 @@ const ReportsPage = () => {
   }, []);
 
   const handleViewReport = async (fileId) => {
+    setLoadingReport(true);
+    setSelectedReport(null);
+    setError('');
     try {
       const res = await axios.get(`http://localhost:5000/get-report/${fileId}`);
+      if (!res.data || !res.data.predictions || !Array.isArray(res.data.predictions)) {
+        setError('Invalid report format.');
+        return;
+      }
       setSelectedReport(res.data);
     } catch (err) {
+      setError('Failed to load report.');
       console.error(err);
+    } finally {
+      setLoadingReport(false);
     }
   };
 
@@ -48,61 +67,79 @@ const ReportsPage = () => {
             Past Prediction Reports
           </Typography>
 
-          <Table size="small">
-            <TableHead>
-              <TableRow sx={{ backgroundColor: '#263238' }}>
-                <TableCell sx={{ color: '#ffffff', fontWeight: 600, py: 1.5 }}>File ID</TableCell>
-                <TableCell sx={{ color: '#ffffff', fontWeight: 600, py: 1.5 }}>Created At</TableCell>
-                <TableCell sx={{ color: '#ffffff', fontWeight: 600, py: 1.5 }}>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {reports.map((r, idx) => (
-                <TableRow
-                  key={idx}
-                  hover
-                  sx={{
-                    backgroundColor: idx % 2 === 0 ? '#2c2c2c' : '#252525',
-                    '&:hover': { backgroundColor: '#37474f' },
-                    '& td': { py: 2 }, // Increased row height
-                  }}
-                >
-                  <TableCell sx={{ color: '#ffffff' }}>{r.file_id}</TableCell>
-                  <TableCell sx={{ color: '#ffffff' }}>{r.created_at}</TableCell>
-                  <TableCell>
-                    <Button
-                      onClick={() => handleViewReport(r.file_id)}
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        borderColor: '#42a5f5',
-                        color: '#42a5f5',
-                        fontWeight: 600,
-                        '&:hover': { backgroundColor: '#1e88e5', color: '#fff' },
-                      }}
-                    >
-                      View
-                    </Button>
-                    <Button
-                      href={`http://localhost:5000/download-report/${r.file_id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      size="small"
-                      sx={{
-                        ml: 2,
-                        color: '#ffffff',
-                        fontWeight: 600,
-                        backgroundColor: '#1e88e5',
-                        '&:hover': { backgroundColor: '#1565c0' },
-                      }}
-                    >
-                      Download
-                    </Button>
-                  </TableCell>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+
+          {reports.length === 0 && !error ? (
+            <Alert severity="info" sx={{ my: 3 }}>
+              No reports available.
+            </Alert>
+          ) : (
+            <Table size="small">
+              <TableHead>
+                <TableRow sx={{ backgroundColor: '#263238' }}>
+                  <TableCell sx={{ color: '#ffffff', fontWeight: 600, py: 1.5 }}>File ID</TableCell>
+                  <TableCell sx={{ color: '#ffffff', fontWeight: 600, py: 1.5 }}>Created At</TableCell>
+                  <TableCell sx={{ color: '#ffffff', fontWeight: 600, py: 1.5 }}>Actions</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHead>
+              <TableBody>
+                {reports.map((r, idx) => (
+                  <TableRow
+                    key={idx}
+                    hover
+                    sx={{
+                      backgroundColor: idx % 2 === 0 ? '#2c2c2c' : '#252525',
+                      '&:hover': { backgroundColor: '#37474f' },
+                      '& td': { py: 2 },
+                    }}
+                  >
+                    <TableCell sx={{ color: '#ffffff' }}>{r.file_id}</TableCell>
+                    <TableCell sx={{ color: '#ffffff' }}>{r.created_at}</TableCell>
+                    <TableCell>
+                      <Button
+                        onClick={() => handleViewReport(r.file_id)}
+                        size="small"
+                        variant="outlined"
+                        sx={{
+                          borderColor: '#42a5f5',
+                          color: '#42a5f5',
+                          fontWeight: 600,
+                          '&:hover': { backgroundColor: '#1e88e5', color: '#fff' },
+                        }}
+                      >
+                        View
+                      </Button>
+                      <Button
+                        href={`http://localhost:5000/download-report/${r.file_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        size="small"
+                        sx={{
+                          ml: 2,
+                          color: '#ffffff',
+                          fontWeight: 600,
+                          backgroundColor: '#1e88e5',
+                          '&:hover': { backgroundColor: '#1565c0' },
+                        }}
+                      >
+                        Download
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+
+          {loadingReport && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <CircularProgress color="info" />
+            </Box>
+          )}
 
           {selectedReport && (
             <>

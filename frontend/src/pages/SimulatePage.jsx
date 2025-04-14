@@ -9,44 +9,79 @@ import {
   TableCell,
   TableBody,
   TextField,
-  Box
+  Box,
+  Alert
 } from '@mui/material';
 import axios from 'axios';
 import PageWrapper from '../components/PageWrapper';
 import Footer from '../components/Footer';
+
 const SimulatePage = () => {
   const [fileId, setFileId] = useState('');
   const [packets, setPackets] = useState([]);
   const [predictions, setPredictions] = useState([]);
   const [reportPath, setReportPath] = useState('');
   const [simulationMessage, setSimulationMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [fileIdError, setFileIdError] = useState('');
+  const [alertMsg, setAlertMsg] = useState('');
+
+  const isValidFileId = (id) => /^[a-zA-Z0-9_-]{6,100}$/.test(id);
+
+  const validateInput = () => {
+    if (!fileId.trim()) {
+      setFileIdError('File ID is required.');
+      return false;
+    }
+    if (!isValidFileId(fileId.trim())) {
+      setFileIdError('Invalid File ID format.');
+      return false;
+    }
+    setFileIdError('');
+    return true;
+  };
 
   const handleSimulate = async () => {
+    if (!validateInput()) return;
     try {
-      const res = await axios.post('http://localhost:5000/generate-pcap', { file_id: fileId });
+      setLoading(true);
+      const res = await axios.post('http://localhost:5000/generate-pcap', { file_id: fileId.trim() });
       setSimulationMessage(res.data.message);
+      setAlertMsg('');
     } catch (err) {
-      console.error('Simulation error:', err);
       setSimulationMessage('Simulation failed.');
+      setAlertMsg('Failed to generate simulated PCAP.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleValidate = async () => {
+    if (!validateInput()) return;
     try {
-      const res = await axios.post('http://localhost:5000/validate-pcap', { file_id: fileId });
+      setLoading(true);
+      const res = await axios.post('http://localhost:5000/validate-pcap', { file_id: fileId.trim() });
       setPackets(res.data.packets);
+      setAlertMsg('');
     } catch (err) {
-      console.error('Validation error:', err);
+      setAlertMsg('Failed to preview packets.');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handlePredict = async () => {
+    if (!validateInput()) return;
     try {
-      const res = await axios.post('http://localhost:5000/predict', { file_id: fileId });
+      setLoading(true);
+      const res = await axios.post('http://localhost:5000/predict', { file_id: fileId.trim() });
       setPredictions(res.data.predictions);
       setReportPath(res.data.report_path);
+      setAlertMsg('');
     } catch (err) {
-      console.error('Prediction error:', err);
+      setAlertMsg('Prediction failed.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -63,21 +98,45 @@ const SimulatePage = () => {
             fullWidth
             margin="normal"
             value={fileId}
+            error={!!fileIdError}
+            helperText={fileIdError}
             onChange={(e) => setFileId(e.target.value)}
-            sx={{ input: { color: '#e0e0e0' } }}
+            sx={{ input: { color: '#e0e0e0' }, label: { color: '#e0e0e0' } }}
+            onBlur={validateInput}
           />
 
           <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-            <Button variant="contained" onClick={handleSimulate} sx={{ backgroundColor: '#42a5f5' }}>
+            <Button
+              variant="contained"
+              onClick={handleSimulate}
+              sx={{ backgroundColor: '#42a5f5' }}
+              disabled={loading || !fileId.trim()}
+            >
               Generate Simulated PCAP
             </Button>
-            <Button variant="contained" onClick={handleValidate} sx={{ backgroundColor: '#ba68c8' }}>
+            <Button
+              variant="contained"
+              onClick={handleValidate}
+              sx={{ backgroundColor: '#ba68c8' }}
+              disabled={loading || !fileId.trim()}
+            >
               Preview Packets
             </Button>
-            <Button variant="contained" onClick={handlePredict} sx={{ backgroundColor: '#66bb6a' }}>
+            <Button
+              variant="contained"
+              onClick={handlePredict}
+              sx={{ backgroundColor: '#66bb6a' }}
+              disabled={loading || !fileId.trim()}
+            >
               Predict
             </Button>
           </Box>
+
+          {alertMsg && (
+            <Alert severity="error" sx={{ mt: 3 }}>
+              {alertMsg}
+            </Alert>
+          )}
 
           {simulationMessage && (
             <Typography sx={{ mt: 3, color: '#81c784' }}>{simulationMessage}</Typography>
@@ -165,7 +224,7 @@ const SimulatePage = () => {
                 <Button
                   variant="outlined"
                   color="info"
-                  href={`http://localhost:5000/download-report/${fileId}`}
+                  href={`http://localhost:5000/download-report/${fileId.trim()}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   sx={{ mt: 3 }}

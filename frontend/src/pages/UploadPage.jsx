@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import {
-  Paper, TextField, MenuItem, Button, Typography, FormControl, InputLabel, Select, Box
+  Paper, TextField, MenuItem, Button, Typography, FormControl, InputLabel, Select, Box, Alert
 } from '@mui/material';
 import axios from 'axios';
 import PageWrapper from '../components/PageWrapper';
 import Footer from '../components/Footer';
-
 
 const UploadPage = () => {
   const [file, setFile] = useState(null);
@@ -15,32 +14,60 @@ const UploadPage = () => {
   const [recordLimit, setRecordLimit] = useState(10);
   const [fileId, setFileId] = useState('');
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
+
+  const validateInputs = () => {
+    setError('');
+    if (!file) {
+      setError('Please select a .pcap file.');
+      return false;
+    }
+    if (!file.name.endsWith('.pcap')) {
+      setError('Only .pcap files are allowed.');
+      return false;
+    }
+    if (mode === 'custom') {
+      try {
+        JSON.parse(customFeatures);
+      } catch {
+        setError('Custom features must be valid JSON.');
+        return false;
+      }
+    }
+    const recordLimitNumber = Number(recordLimit);
+    if (isNaN(recordLimitNumber) || recordLimitNumber < 1) {
+      setError('Record limit must be a number greater than 0.');
+      return false;
+    }
+    return true;
+  };
 
   const handleUpload = async () => {
-    if (!file) {
-      setMessage('Please select a .pcap file first.');
-      return;
-    }
+    if (!validateInputs()) return;
 
     const formData = new FormData();
     formData.append('file', file);
-
     const payload = {
       tls_version: tlsVersion,
       mode,
       record_limit: Number(recordLimit),
       ...(mode === 'custom' && { custom_features: customFeatures })
     };
-
     formData.append('metadata', JSON.stringify(payload));
 
     try {
+      setUploading(true);
+      setMessage('');
+      setFileId('');
       const response = await axios.post('http://localhost:5000/upload-pcap', formData);
       setFileId(response.data.file_id);
       setMessage(response.data.message || 'Upload successful!');
-    } catch (error) {
-      console.error(error);
-      setMessage('Upload failed.');
+      setError('');
+    } catch (err) {
+      setError('Upload failed. Please try again.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -115,9 +142,16 @@ const UploadPage = () => {
             color="primary"
             onClick={handleUpload}
             sx={{ mt: 3 }}
+            disabled={uploading}
           >
             Upload & Simulate
           </Button>
+
+          {error && (
+            <Alert severity="error" sx={{ mt: 3 }}>
+              {error}
+            </Alert>
+          )}
 
           {fileId && (
             <Typography sx={{ mt: 3, color: '#66bb6a' }}>
