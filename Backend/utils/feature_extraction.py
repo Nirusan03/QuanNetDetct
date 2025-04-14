@@ -16,17 +16,24 @@ def get_tls_filter(version_choice):
 
 # Main function to extract flows and simulate attack traffic
 def process_pcap_and_simulate(pcap_path, save_csv_path, tls_version="3", mode="auto", custom_features=None, record_limit=None):
-    # Fix for PyShark: create an event loop inside thread
+    if not os.path.exists(pcap_path):
+        raise FileNotFoundError(f"[ERROR] PCAP file not found: {pcap_path}")
+    if mode not in ["auto", "custom"]:
+        raise ValueError(f"[ERROR] Invalid mode '{mode}'. Must be 'auto' or 'custom'.")
+    if tls_version not in ["1", "2", "3"]:
+        raise ValueError(f"[ERROR] Invalid TLS version '{tls_version}'. Must be '1', '2', or '3'.")
+
     asyncio.set_event_loop(asyncio.new_event_loop())
-
-    print(f"[+] Loading PCAP: {pcap_path} | Mode: {mode} | TLS: {tls_version}")
     display_filter = get_tls_filter(tls_version)
+    print(f"[+] Loading PCAP: {pcap_path} | Mode: {mode} | TLS: {tls_version}")
 
-    # Read .pcap file and filter based on TLS version
-    cap = pyshark.FileCapture(pcap_path, display_filter=display_filter, only_summaries=False)
+    try:
+        cap = pyshark.FileCapture(pcap_path, display_filter=display_filter, only_summaries=False)
+    except Exception as e:
+        raise RuntimeError(f"[ERROR] Failed to read PCAP with PyShark: {str(e)}")
+
     flows = defaultdict(list)
 
-    # Extract flow key (5-tuple): src-dst-sport-dport-protocol
     def extract_flow_key(pkt):
         try:
             ip_layer = pkt.ip
@@ -38,18 +45,22 @@ def process_pcap_and_simulate(pcap_path, save_csv_path, tls_version="3", mode="a
             sport = pkt[pkt.transport_layer].srcport
             dport = pkt[pkt.transport_layer].dstport
             return f"{src}-{dst}-{sport}-{dport}-{proto}"
-        except:
+        except Exception:
             return None
 
-    # Group packets into flows
-    for pkt in cap:
-        key = extract_flow_key(pkt)
-        if key:
-            flows[key].append(pkt)
+    try:
+        for pkt in cap:
+            key = extract_flow_key(pkt)
+            if key:
+                flows[key].append(pkt)
+    except Exception as e:
+        raise RuntimeError(f"[ERROR] Failed during flow extraction: {str(e)}")
+
+    if len(flows) == 0:
+        raise ValueError("[ERROR] No valid TLS flows found in PCAP.")
 
     print(f"[+] Extracted {len(flows)} TLS flows from PCAP.")
 
-    # Extract features: duration, source port, total forward length
     real_flow_data = []
     for key, packets in flows.items():
         try:
@@ -61,38 +72,46 @@ def process_pcap_and_simulate(pcap_path, save_csv_path, tls_version="3", mode="a
                 'Source Port': int(sport) if sport else 0,
                 'Total Length of Fwd Packets': byte_count
             })
-        except:
+        except Exception:
             continue
 
-    # Optionally limit the number of flows to simulate
-    if record_limit and record_limit < len(real_flow_data):
+    if not real_flow_data:
+        raise ValueError("[ERROR] No usable flow data extracted from PCAP.")
+
+    if record_limit and isinstance(record_limit, int) and record_limit < len(real_flow_data):
         real_flow_data = real_flow_data[:record_limit]
 
     real_df = pd.DataFrame(real_flow_data)
 
-    # Use user-defined features if mode is 'custom'
     if mode == "custom":
-        final_df = pd.DataFrame([custom_features] * len(real_df))
-        print(f"[+] Using user-defined custom feature values.")
+        if not isinstance(custom_features, dict):
+            raise TypeError("[ERROR] 'custom_features' must be a dictionary of key-value feature pairs.")
+        try:
+            final_df = pd.DataFrame([custom_features] * len(real_df))
+            print(f"[+] Using user-defined custom feature values.")
+        except Exception as e:
+            raise RuntimeError(f"[ERROR] Failed to apply custom features: {str(e)}")
     else:
-        # Load pre-encoded DDoS attack vectors
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        outputs_dir = os.path.join(base_dir, '..', 'outputs')
-        onehot_path = os.path.join(outputs_dir, 'TLS_OneHotEncoded.csv')
+        onehot_path = os.path.join(base_dir, '..', 'outputs', 'TLS_OneHotEncoded.csv')
 
         if not os.path.exists(onehot_path):
-            raise FileNotFoundError(f"Missing file: {onehot_path}")
+            raise FileNotFoundError(f"[ERROR] Required dataset not found: {onehot_path}")
 
-        onehot_df = pd.read_csv(onehot_path)
+        try:
+            onehot_df = pd.read_csv(onehot_path)
+        except Exception as e:
+            raise RuntimeError(f"[ERROR] Failed to load attack dataset: {str(e)}")
 
-        # Select only attack samples
         ddos_mask = (onehot_df['Label_0'] == 1.0) | (onehot_df['Label_1'] == 1.0) | (onehot_df['Label_2'] == 1.0)
         ddos_samples = onehot_df[ddos_mask].drop(
             columns=['Label_0', 'Label_1', 'Label_2', 'Label_3', 'Label_4', 'Timestamp'],
             errors='ignore'
         ).reset_index(drop=True)
 
-        # For each flow, embed attack sample and keep flow-based fields
+        if ddos_samples.empty:
+            raise ValueError("[ERROR] No DDoS attack samples found in TLS_OneHotEncoded.csv")
+
         final_rows = []
         for i in range(len(real_df)):
             attack_row = ddos_samples.sample(n=1, random_state=random.randint(0, 10000)).copy().reset_index(drop=True)
@@ -104,6 +123,8 @@ def process_pcap_and_simulate(pcap_path, save_csv_path, tls_version="3", mode="a
         final_df = pd.concat(final_rows, ignore_index=True)
         print(f"[+] Simulated {len(final_df)} DDoS flows using automated features.")
 
-    # Save the final simulated dataset
-    final_df.to_csv(save_csv_path, index=False)
-    print(f"[+] Saved simulation output to {save_csv_path}")
+    try:
+        final_df.to_csv(save_csv_path, index=False)
+        print(f"[+] Saved simulation output to {save_csv_path}")
+    except Exception as e:
+        raise RuntimeError(f"[ERROR] Failed to save CSV file: {str(e)}")
