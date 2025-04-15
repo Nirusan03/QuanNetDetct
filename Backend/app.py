@@ -27,6 +27,7 @@ CORS(app)
 client = MongoClient("mongodb://localhost:27017/")
 db = client['quan_net_detect']
 reports_col = db['detection_reports']
+quantum_log_col = db['quantum_logs']
 
 # URL (POST) - Body (form-data): http://localhost:5000/upload-pcap
 # (key) file - (type file) - PCAp file (value)
@@ -82,7 +83,6 @@ def upload_pcap():
     return jsonify({'message': 'Upload and simulation complete', 'file_id': file_id})
 
 # URL (POST) : http://localhost:5000/generate-pcap
-# Body (raw): { "file_id": "195e332758af400b97e9e8e50cfe8160" }
 @app.route('/generate-pcap', methods=['POST'])
 def generate_simulated_pcap():
     data = request.get_json()
@@ -103,7 +103,6 @@ def generate_simulated_pcap():
         return jsonify({'error': f'PCAP generation failed: {str(e)}'}), 500
 
 # URL (POST) : http://localhost:5000/validate-pcap
-# Body (raw ): { "file_id": "195e332758af400b97e9e8e50cfe8160" }
 @app.route('/validate-pcap', methods=['POST'])
 def validate_simulated_pcap():
     data = request.get_json()
@@ -123,7 +122,6 @@ def validate_simulated_pcap():
         return jsonify({'error': f'Validation failed: {str(e)}'}), 500
 
 # URL (POST): http://localhost:5000/predict
-# Body (raw ): { "file_id": "195e332758af400b97e9e8e50cfe8160" } 
 @app.route('/predict', methods=['POST'])
 def predict():
     data = request.get_json()
@@ -138,7 +136,7 @@ def predict():
         return jsonify({'error': f'Model input CSV not found: {csv_path}'}), 404
 
     try:
-        predictions = run_qnn_prediction(csv_path)
+        predictions, quantum_log, quantum_log_path = run_qnn_prediction(csv_path, file_id=file_id)
         pd.DataFrame(predictions).to_csv(report_path, index=False)
 
         reports_col.insert_one({
@@ -149,7 +147,13 @@ def predict():
             'predictions': predictions
         })
 
-        return jsonify({'predictions': predictions, 'report_path': report_path})
+        quantum_log_col.insert_one(quantum_log)
+
+        return jsonify({
+            'predictions': predictions,
+            'report_path': report_path,
+            'quantum_log_path': quantum_log_path
+        })
     except Exception as e:
         return jsonify({'error': f'Prediction failed: {str(e)}'}), 500
 
